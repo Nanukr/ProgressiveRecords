@@ -2,9 +2,10 @@ package com.rib.progressiverecords.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity
 data class Exercise(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey val id: UUID,
     val exerciseName: String
 )

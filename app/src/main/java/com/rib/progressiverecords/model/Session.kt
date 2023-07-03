@@ -2,11 +2,12 @@ package com.rib.progressiverecords.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity
 data class Session(
-    @PrimaryKey(autoGenerate = true) val id: Int,
-    val sessionName: String?,
-    val week: Int,
-    val sessionExercises: List<Int>?
+    @PrimaryKey val id: UUID,
+    val sessionName: String,
+    val recordId: UUID,
+    val date: Date
 )
