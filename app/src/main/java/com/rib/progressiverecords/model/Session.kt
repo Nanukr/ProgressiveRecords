@@ -8,6 +8,5 @@ import java.util.*
 data class Session(
     @PrimaryKey val id: UUID,
     val sessionName: String,
-    val recordId: UUID,
     val date: Date
 )

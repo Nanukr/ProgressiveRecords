@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.Update
 import com.rib.progressiverecords.database.RecordDatabase
+import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
+import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
@@ -23,11 +26,9 @@ class RecordRepository private constructor(context: Context) {
 
     suspend fun updateSession(session: Session) = database.recordDao().updateSession(session)
 
-    fun getSessions(): Flow<List<Session>> = database.recordDao().getSessions()
+    fun getSessions(): Flow<List<SessionWithRecords>> = database.recordDao().getSessions()
 
     suspend fun getSession(id: UUID): Session = database.recordDao().getSession(id)
-
-    suspend fun getExerciseNameById(id: UUID): String = database.recordDao().getExerciseNameById(id)
 
     companion object {
         private var INSTANCE: RecordRepository? = null

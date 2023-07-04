@@ -8,8 +8,8 @@ import com.rib.progressiverecords.model.Session
 data class SessionWithRecords(
     @Embedded val session: Session,
     @Relation(
-        parentColumn = "recordId",
-        entityColumn = "id"
+        parentColumn = "id",
+        entityColumn = "sessionId"
     )
     val records: List<Record>
 )

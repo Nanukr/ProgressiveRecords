@@ -4,6 +4,7 @@ import androidx.room.*
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
+import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
@@ -20,10 +21,10 @@ interface RecordDao {
 
     @Transaction
     @Query("SELECT * FROM session ORDER BY date ASC")
-    fun getSessions(): Flow<List<Session>>
+    fun getSessions(): Flow<List<SessionWithRecords>>
 
     @Transaction
-    @Query("SELECT * FROM session WHERE id=(:id)")
+    @Query("SELECT * FROM session WHERE id = (:id)")
     suspend fun getSession(id: UUID): Session
 
     @Insert
@@ -31,7 +32,4 @@ interface RecordDao {
 
     @Insert
     suspend fun addExercise(exercise: Exercise)
-
-    @Query("SELECT exerciseName FROM exercise WHERE id=(:id)")
-    suspend fun getExerciseNameById(id: UUID): String
 }

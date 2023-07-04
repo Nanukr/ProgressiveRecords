@@ -16,5 +16,5 @@ import com.rib.progressiverecords.SessionListViewModel
 fun BuilderScreen(
     modifier: Modifier = Modifier
 ) {
-    SessionList(modifier = modifier, viewModel = SessionListViewModel())
+    SessionScreen()
 }

@@ -8,8 +8,8 @@ import com.rib.progressiverecords.model.Record
 data class ExerciseWithRecords(
     @Embedded val exercise: Exercise,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "exerciseId"
+        parentColumn = "exerciseName",
+        entityColumn = "exerciseName"
     )
     val records: List<Record>
 )
