@@ -2,12 +2,10 @@ package com.rib.progressiverecords
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.Update
 import com.rib.progressiverecords.database.RecordDatabase
-import com.rib.progressiverecords.model.Exercise
-import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.SessionWithRecords
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
