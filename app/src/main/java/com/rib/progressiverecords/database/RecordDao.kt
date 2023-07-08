@@ -4,6 +4,7 @@ import androidx.room.*
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
+import com.rib.progressiverecords.model.relations.ExerciseWithRecords
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.flow.Flow
 import java.util.*
@@ -29,6 +30,10 @@ interface RecordDao {
 
     @Insert
     suspend fun addRecord(record: Record)
+
+    @Transaction
+    @Query("SELECT * FROM exercise ORDER BY exerciseName ASC")
+    fun getExercises(): Flow<List<ExerciseWithRecords>>
 
     @Insert
     suspend fun addExercise(exercise: Exercise)

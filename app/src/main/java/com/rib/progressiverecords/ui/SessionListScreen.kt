@@ -4,22 +4,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.rib.progressiverecords.SessionListViewModel
+import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 
 @Composable
-fun SessionScreen(
+fun SessionListScreen(
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -34,7 +29,7 @@ fun SessionScreen(
 @Composable
 fun SessionList(
     modifier: Modifier = Modifier,
-    viewModel: SessionListViewModel = viewModel()
+    viewModel: SessionViewModel = viewModel()
 ) {
     val sessions = viewModel.sessions.collectAsState(initial = emptyList())
 

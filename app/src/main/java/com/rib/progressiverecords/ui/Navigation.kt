@@ -20,10 +20,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.rib.progressiverecords.BottomNavItem
 
 @Composable
-fun Navigation(navHostController: NavHostController) {
-    NavHost(navController = navHostController, startDestination = "session") {
+fun Navigation(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "session") {
         composable("session") {
-            SessionScreen()
+            SessionListScreen()
         }
 
         composable("exercise") {

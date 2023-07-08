@@ -37,6 +37,6 @@ fun BuilderScreen(
             }
         ) }
     ) { it
-        Navigation(navHostController = navController)
+        Navigation(navController = navController)
     }
 }

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.*
 
-class SessionListViewModel : ViewModel() {
+class SessionViewModel : ViewModel() {
     private val recordRepository = RecordRepository.get()
 
     private val _sessions: MutableStateFlow<List<SessionWithRecords>> = MutableStateFlow(emptyList())
@@ -27,5 +27,9 @@ class SessionListViewModel : ViewModel() {
 
     suspend fun addSession(session: Session) {
         recordRepository.addSession(session)
+    }
+
+    suspend fun getSession(id: UUID) {
+        recordRepository.getSession(id)
     }
 }
