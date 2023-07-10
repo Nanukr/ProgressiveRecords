@@ -1,24 +1,31 @@
 package com.rib.progressiverecords.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.rib.progressiverecords.ExerciseListViewModel
+import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Exercise
-import com.rib.progressiverecords.model.Session
-import com.rib.progressiverecords.model.relations.ExerciseWithRecords
+import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun ExerciseScreen() {
+    var addingExercise by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopBar(
@@ -26,15 +33,18 @@ fun ExerciseScreen() {
             )
         }
     ) { it
-        ExerciseList()
+        ExerciseList(addingExercise = addingExercise, onDismissDialog = { addingExercise = false })
     }
 }
 
 @Composable
 private fun ExerciseList(
     modifier: Modifier = Modifier,
-    viewModel: ExerciseListViewModel = viewModel()
+    viewModel: SessionViewModel = viewModel(),
+    addingExercise: Boolean,
+    onDismissDialog: () -> Unit
 ) {
+
     val exercises = viewModel.exercises.collectAsState(initial = emptyList())
 
     if (exercises.value.isEmpty()) {
@@ -53,11 +63,50 @@ private fun ExerciseList(
             }
         }
     }
+
+    if (addingExercise) {
+        AddExerciseDialog(
+            onDismissRequest = { onDismissDialog() }
+            }
+        )
+    }
 }
 
 @Composable
 private fun ExerciseItem(
-    exercise: ExerciseWithRecords
+    exercise: Exercise
 ) {
-    Text(text = exercise.exercise.exerciseName, style = MaterialTheme.typography.h4)
+    Text(text = exercise.exerciseName, style = MaterialTheme.typography.h4)
+}
+
+@Composable
+private fun AddExerciseDialog(
+    addExercise: (String) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+
+    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue())
+    }
+
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card {
+            Column {
+                Text(text="Exercise name: ")
+
+                TextField(
+                    value = text,
+                    onValueChange = { text = it }
+                )
+
+                TextButton(onClick = { addExercise(text.annotatedString.toString()) }) {
+                    Text(text="Add exercise")
+                }
+
+                TextButton(onClick = { onDismissRequest() }) {
+                    Text(text="Cancel", color = Color.Red)
+                }
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@ package com.rib.progressiverecords
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,16 +18,28 @@ class SessionViewModel : ViewModel() {
     val sessions: StateFlow<List<SessionWithRecords>>
         get() = _sessions.asStateFlow()
 
+    private val _exercises: MutableStateFlow<List<Exercise>> = MutableStateFlow(emptyList())
+    val exercises: StateFlow<List<Exercise>>
+        get() = _exercises.asStateFlow()
+
     init {
         viewModelScope.launch {
             recordRepository.getSessions().collect {
                 _sessions.value = it
+            }
+
+            recordRepository.getExercises().collect {
+                _exercises.value = it
             }
         }
     }
 
     suspend fun addSession(session: Session) {
         recordRepository.addSession(session)
+    }
+
+    suspend fun addExercise(exercise: Exercise) {
+        recordRepository.addExercise(exercise)
     }
 
     suspend fun getSession(id: UUID) {

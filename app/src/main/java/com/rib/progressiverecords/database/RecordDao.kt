@@ -25,15 +25,15 @@ interface RecordDao {
     fun getSessions(): Flow<List<SessionWithRecords>>
 
     @Transaction
+    @Query("SELECT * FROM exercise ORDER BY exerciseName ASC")
+    fun getExercises(): Flow<List<Exercise>>
+
+    @Transaction
     @Query("SELECT * FROM session WHERE id = (:id)")
     suspend fun getSession(id: UUID): Session
 
     @Insert
     suspend fun addRecord(record: Record)
-
-    @Transaction
-    @Query("SELECT * FROM exercise ORDER BY exerciseName ASC")
-    fun getExercises(): Flow<List<ExerciseWithRecords>>
 
     @Insert
     suspend fun addExercise(exercise: Exercise)
