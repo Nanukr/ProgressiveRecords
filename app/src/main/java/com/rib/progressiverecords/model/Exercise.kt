@@ -6,5 +6,5 @@ import java.util.*
 
 @Entity
 data class Exercise(
-    @PrimaryKey val exerciseName: String
+    @PrimaryKey var exerciseName: String
 )

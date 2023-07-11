@@ -8,12 +8,18 @@ import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.ExerciseWithRecords
 import com.rib.progressiverecords.model.relations.SessionWithRecords
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import java.util.*
 
 
-class RecordRepository private constructor(context: Context) {
+class RecordRepository private constructor(
+    context: Context,
+    private val coroutineScope: CoroutineScope = GlobalScope
+) {
 
     private val database: RecordDatabase = Room.databaseBuilder(
         context.applicationContext,
@@ -33,7 +39,11 @@ class RecordRepository private constructor(context: Context) {
 
     suspend fun getSession(id: UUID): Session = database.recordDao().getSession(id)
 
-    suspend fun addExercise(exercise: Exercise) = database.recordDao().addExercise(exercise)
+    suspend fun addExercise(exercise: Exercise){
+        coroutineScope.launch{
+            database.recordDao().addExercise(exercise)
+        }
+    }
 
     companion object {
         private var INSTANCE: RecordRepository? = null

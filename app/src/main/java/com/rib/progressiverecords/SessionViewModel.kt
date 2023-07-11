@@ -39,7 +39,9 @@ class SessionViewModel : ViewModel() {
     }
 
     suspend fun addExercise(exercise: Exercise) {
-        recordRepository.addExercise(exercise)
+        viewModelScope.launch {
+            recordRepository.addExercise(exercise)
+        }
     }
 
     suspend fun getSession(id: UUID) {
