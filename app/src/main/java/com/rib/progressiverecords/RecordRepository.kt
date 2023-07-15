@@ -39,6 +39,8 @@ class RecordRepository private constructor(
 
     suspend fun getSession(id: UUID): Session = database.recordDao().getSession(id)
 
+    suspend fun getRecord(id: UUID): Record = database.recordDao().getRecord(id)
+
     suspend fun addExercise(exercise: Exercise){
         coroutineScope.launch{
             database.recordDao().addExercise(exercise)

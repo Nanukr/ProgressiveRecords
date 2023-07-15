@@ -9,27 +9,31 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 
 @Composable
 fun SessionListScreen(
-    modifier: Modifier = Modifier
+    viewModel: SessionViewModel,
+    navController: NavController
 ) {
     Scaffold(
         topBar = { TopBar(
-            onClick = { /*TODO*/ }
+            onClick = {
+                viewModel.changeDetailedSession(null)
+                navController.navigate("session_detail")
+            }
         ) }
     ) { it
-        SessionList()
+        SessionList(viewModel = viewModel)
     }
 }
 
 @Composable
 fun SessionList(
     modifier: Modifier = Modifier,
-    viewModel: SessionViewModel = viewModel()
+    viewModel: SessionViewModel
 ) {
     val sessions = viewModel.sessions.collectAsState(initial = emptyList())
 
@@ -64,7 +68,7 @@ private fun SessionItem(
     ) {
         Text(
             text = session.session.sessionName,
-            style = MaterialTheme.typography.h4
+            style = MaterialTheme.typography.h5
         )
 
         records.forEach {record ->

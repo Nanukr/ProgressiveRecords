@@ -35,6 +35,9 @@ interface RecordDao {
     @Insert
     suspend fun addRecord(record: Record)
 
+    @Query("SELECT * FROM record WHERE id = (:id)")
+    suspend fun getRecord(id: UUID): Record
+
     @Insert
     suspend fun addExercise(exercise: Exercise)
 }

@@ -2,10 +2,7 @@ package com.rib.progressiverecords.ui
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
@@ -18,9 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Exercise
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +28,9 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "ExerciseList"
 @Composable
-fun ExerciseScreen() {
+fun ExerciseScreen(
+    viewModel: ExerciseViewModel = viewModel()
+) {
     var addingExercise by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
@@ -39,16 +40,23 @@ fun ExerciseScreen() {
             )
         }
     ) { it
-        ExerciseList(addingExercise = addingExercise, onDismissDialog = { addingExercise = false })
+        ExerciseList(viewModel = viewModel)
+
+        if (addingExercise) {
+            AddExerciseDialog(
+                onDismissRequest = { addingExercise = false },
+                addExercise = {
+                    addingExercise = false
+                    addExerciseToDb(it, viewModel)
+                }
+            )
+        }
     }
 }
 
 @Composable
 private fun ExerciseList(
-    modifier: Modifier = Modifier,
-    viewModel: SessionViewModel = viewModel(),
-    addingExercise: Boolean,
-    onDismissDialog: () -> Unit
+    viewModel: ExerciseViewModel
 ) {
     val exercises = viewModel.exercises.collectAsState(initial = emptyList())
 
@@ -63,22 +71,12 @@ private fun ExerciseList(
     } else {
         Log.d(TAG, "List not empty")
         LazyColumn(
-            modifier = modifier
+            modifier = Modifier.padding(16.dp)
         ) {
             items(exercises.value) {exercise ->
                 ExerciseItem(exercise)
             }
         }
-    }
-
-    if (addingExercise) {
-        AddExerciseDialog(
-            onDismissRequest = { onDismissDialog() },
-            addExercise = {
-                onDismissDialog()
-                addExerciseToDb(it, viewModel)
-            }
-        )
     }
 }
 
@@ -86,7 +84,7 @@ private fun ExerciseList(
 private fun ExerciseItem(
     exercise: Exercise
 ) {
-    Text(text = exercise.exerciseName, style = MaterialTheme.typography.h4)
+    Text(text = exercise.exerciseName, style = MaterialTheme.typography.h5)
 }
 
 @Composable
@@ -123,7 +121,7 @@ private fun AddExerciseDialog(
 
 private fun addExerciseToDb(
     exercise: Exercise,
-    viewModel: SessionViewModel
+    viewModel: ExerciseViewModel
 ) {
     viewModel.viewModelScope.launch {
         viewModel.addExercise(exercise)
