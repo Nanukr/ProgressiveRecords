@@ -38,6 +38,9 @@ interface RecordDao {
     @Query("SELECT * FROM record WHERE id = (:id)")
     suspend fun getRecord(id: UUID): Record
 
-    @Insert
+    @Upsert
     suspend fun addExercise(exercise: Exercise)
+
+    @Delete
+    suspend fun deleteExercise(exercise: Exercise)
 }

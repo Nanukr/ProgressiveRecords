@@ -29,4 +29,10 @@ class ExerciseViewModel : ViewModel() {
             recordRepository.addExercise(exercise)
         }
     }
+
+    suspend fun deleteExercise(exercise: Exercise) {
+        viewModelScope.launch {
+            recordRepository.deleteExercise(exercise)
+        }
+    }
 }

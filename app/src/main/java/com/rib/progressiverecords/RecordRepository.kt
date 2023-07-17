@@ -41,9 +41,15 @@ class RecordRepository private constructor(
 
     suspend fun getRecord(id: UUID): Record = database.recordDao().getRecord(id)
 
-    suspend fun addExercise(exercise: Exercise){
+    suspend fun addExercise(exercise: Exercise) {
         coroutineScope.launch{
             database.recordDao().addExercise(exercise)
+        }
+    }
+
+    suspend fun deleteExercise(exercise: Exercise) {
+        coroutineScope.launch{
+            database.recordDao().deleteExercise(exercise)
         }
     }
 
