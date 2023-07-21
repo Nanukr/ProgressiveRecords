@@ -2,6 +2,7 @@ package com.rib.progressiverecords.ui
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.model.Exercise
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ private const val TAG = "ExerciseList"
 @Composable
 fun ExerciseScreen(
     viewModel: ExerciseViewModel = viewModel(),
+    navController: NavController,
     isBeingSelected: Boolean
 ) {
     var exerciseBeingModified by rememberSaveable { mutableStateOf<Exercise?>(null) }
@@ -43,7 +46,13 @@ fun ExerciseScreen(
             )
         }
     ) { it
-        ExerciseList(viewModel = viewModel, onClick = {}, onEditItem = { exerciseBeingModified = it }, onDelete = { exerciseBeingDeleted = it })
+        ExerciseList(
+            viewModel = viewModel,
+            navController = navController,
+            onEditItem = { exerciseBeingModified = it },
+            onDelete = { exerciseBeingDeleted = it },
+            isBeingSelected = isBeingSelected
+        )
 
         if (exerciseBeingModified != null) {
             AddExerciseDialog(
@@ -72,9 +81,10 @@ fun ExerciseScreen(
 @Composable
 private fun ExerciseList(
     viewModel: ExerciseViewModel,
-    onClick: (Exercise) -> Unit,
+    navController: NavController,
     onEditItem: (Exercise) -> Unit,
-    onDelete: (Exercise) -> Unit
+    onDelete: (Exercise) -> Unit,
+    isBeingSelected: Boolean
 ) {
     val exercises = viewModel.exercises.collectAsState(initial = emptyList())
 
@@ -92,7 +102,13 @@ private fun ExerciseList(
             modifier = Modifier.padding(16.dp)
         ) {
             items(exercises.value) {exercise ->
-                ExerciseItem(exercise, onClick = { onClick(it) }, onEdit = { onEditItem(it) }, onDelete = { onDelete(it) })
+                ExerciseItem(
+                    exercise = exercise,
+                    navController = navController,
+                    onEdit = { onEditItem(it) },
+                    onDelete = { onDelete(it) },
+                    isBeingSelected = isBeingSelected
+                )
             }
         }
     }
@@ -101,18 +117,26 @@ private fun ExerciseList(
 @Composable
 private fun ExerciseItem(
     exercise: Exercise,
-    onClick: (Exercise) -> Unit,
+    navController: NavController,
     onEdit: (Exercise) -> Unit,
-    onDelete: (Exercise) -> Unit
+    onDelete: (Exercise) -> Unit,
+    isBeingSelected: Boolean
+
 ) {
-    Row {
-        TextButton(onClick = { onClick(exercise) } ) {
-            Text(
-                text = exercise.exerciseName,
-                style = MaterialTheme.typography.h5,
-                color = Color.Black
-            )
+    val rowModifier = if (isBeingSelected) {
+        Modifier.padding(8.dp).clickable {
+            navController.navigate("session_detail/${exercise.exerciseName}")
         }
+    } else {
+        Modifier.padding(8.dp)
+    }
+
+    Row (modifier = rowModifier) {
+        Text(
+            text = exercise.exerciseName,
+            style = MaterialTheme.typography.h5,
+            color = Color.Black
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 

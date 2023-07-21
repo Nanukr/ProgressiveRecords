@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.navArgument
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 
@@ -22,7 +23,7 @@ fun SessionListScreen(
         topBar = { TopBar(
             onClick = {
                 viewModel.changeDetailedSession(null)
-                navController.navigate("session_detail")
+                navController.navigate("session_detail/ ")
             }
         ) }
     ) { it

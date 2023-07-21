@@ -2,7 +2,6 @@ package com.rib.progressiverecords
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.SessionWithRecords
