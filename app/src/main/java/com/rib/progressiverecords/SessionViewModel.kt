@@ -34,16 +34,14 @@ class SessionViewModel : ViewModel() {
     }
 
     suspend fun addSession(session: Session) {
-        recordRepository.addSession(session)
-    }
-
-    suspend fun getSession(id: UUID) {
-        recordRepository.getSession(id)
-    }
-
-    suspend fun getRecord(id: UUID) {
         viewModelScope.launch {
-            recordRepository.getRecord(id)
+            recordRepository.addSession(session)
+        }
+    }
+
+    suspend fun addRecord(record: Record) {
+        viewModelScope.launch {
+            recordRepository.addRecord(record)
         }
     }
 }

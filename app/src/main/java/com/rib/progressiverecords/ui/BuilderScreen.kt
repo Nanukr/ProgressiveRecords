@@ -28,8 +28,7 @@ fun BuilderScreen(
 
             val navBackStackEntry by navController.currentBackStackEntryAsState()
 
-            bottomBarState.value =
-                !(navBackStackEntry?.destination?.route == "session_detail/{exercise}" || navBackStackEntry?.arguments?.getBoolean("is_selected") ?: false)
+            bottomBarState.value = (navBackStackEntry?.destination?.route != "session_detail")
 
             BottomNavigationBar(
                 items = listOf(
@@ -47,12 +46,7 @@ fun BuilderScreen(
                 ),
                 navController = navController,
                 bottomBarState = bottomBarState,
-                onItemClick = {
-                    when (it.route) {
-                        "session_screen" -> navController.navigate(it.route)
-                        "exercise" -> navController.navigate("${it.route}/false")
-                    }
-                }
+                onItemClick = { navController.navigate(it.route) }
             )
         }
     ) { it

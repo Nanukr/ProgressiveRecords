@@ -27,19 +27,21 @@ class RecordRepository private constructor(
         "RecordDatabase"
     ).build()
 
-    suspend fun addSession(session: Session) = database.recordDao().addSession(session)
+    suspend fun addSession(session: Session) {
+        coroutineScope.launch{
+            database.recordDao().addSession(session)
+        }
+    }
+    suspend fun addRecord(record: Record) {
+        coroutineScope.launch{
+            database.recordDao().addRecord(record)
+        }
+    }
 
-    suspend fun deleteSession(session: Session) = database.recordDao().deleteSession(session)
-
-    suspend fun updateSession(session: Session) = database.recordDao().updateSession(session)
 
     fun getSessions(): Flow<List<SessionWithRecords>> = database.recordDao().getSessions()
 
     fun getExercises(): Flow<List<Exercise>> = database.recordDao().getExercises()
-
-    suspend fun getSession(id: UUID): Session = database.recordDao().getSession(id)
-
-    suspend fun getRecord(id: UUID): Record = database.recordDao().getRecord(id)
 
     suspend fun addExercise(exercise: Exercise) {
         coroutineScope.launch{

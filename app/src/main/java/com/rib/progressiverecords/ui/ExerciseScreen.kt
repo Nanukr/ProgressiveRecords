@@ -1,7 +1,5 @@
 package com.rib.progressiverecords.ui
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,22 +17,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.model.Exercise
 import kotlinx.coroutines.launch
 
-private const val TAG = "ExerciseList"
 @Composable
 fun ExerciseScreen(
     viewModel: ExerciseViewModel = viewModel(),
-    navController: NavController,
-    isBeingSelected: Boolean
+    isBeingSelected: Boolean,
+    onExerciseSelected: (String) -> Unit
 ) {
     var exerciseBeingModified by rememberSaveable { mutableStateOf<Exercise?>(null) }
     var exerciseBeingDeleted by rememberSaveable { mutableStateOf<Exercise?>(null) }
@@ -48,7 +43,7 @@ fun ExerciseScreen(
     ) { it
         ExerciseList(
             viewModel = viewModel,
-            navController = navController,
+            onSelectItem = { onExerciseSelected(it) },
             onEditItem = { exerciseBeingModified = it },
             onDelete = { exerciseBeingDeleted = it },
             isBeingSelected = isBeingSelected
@@ -79,9 +74,9 @@ fun ExerciseScreen(
 }
 
 @Composable
-private fun ExerciseList(
+fun ExerciseList(
     viewModel: ExerciseViewModel,
-    navController: NavController,
+    onSelectItem: (String) -> Unit,
     onEditItem: (Exercise) -> Unit,
     onDelete: (Exercise) -> Unit,
     isBeingSelected: Boolean
@@ -89,7 +84,6 @@ private fun ExerciseList(
     val exercises = viewModel.exercises.collectAsState(initial = emptyList())
 
     if (exercises.value.isEmpty()) {
-        Log.d(TAG, "Empty list")
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -97,14 +91,13 @@ private fun ExerciseList(
             Text(text = "No exercises registered")
         }
     } else {
-        Log.d(TAG, "List not empty")
         LazyColumn(
             modifier = Modifier.padding(16.dp)
         ) {
             items(exercises.value) {exercise ->
                 ExerciseItem(
                     exercise = exercise,
-                    navController = navController,
+                    onSelect = { onSelectItem(it) },
                     onEdit = { onEditItem(it) },
                     onDelete = { onDelete(it) },
                     isBeingSelected = isBeingSelected
@@ -117,16 +110,16 @@ private fun ExerciseList(
 @Composable
 private fun ExerciseItem(
     exercise: Exercise,
-    navController: NavController,
+    onSelect: (String) -> Unit,
     onEdit: (Exercise) -> Unit,
     onDelete: (Exercise) -> Unit,
     isBeingSelected: Boolean
 
 ) {
     val rowModifier = if (isBeingSelected) {
-        Modifier.padding(8.dp).clickable {
-            navController.navigate("session_detail/${exercise.exerciseName}")
-        }
+        Modifier
+            .padding(8.dp)
+            .clickable { onSelect(exercise.exerciseName) }
     } else {
         Modifier.padding(8.dp)
     }
@@ -180,12 +173,12 @@ private fun AddExerciseDialog(
                     modifier = Modifier.padding(8.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Button(onClick = { upsertExercise(exercise) }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)) {
-                        Text(text="Update exercise", color = Color.White)
-                    }
-
                     Button(onClick = { onDismissRequest() }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                         Text(text="Cancel", color = Color.White)
+                    }
+
+                    Button(onClick = { upsertExercise(exercise) }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)) {
+                        Text(text="Update exercise", color = Color.White)
                     }
                 }
             }
@@ -213,17 +206,17 @@ private fun DeleteExerciseDialog(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
-                        onClick = { onDeleteExercise(exercise) },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
-                    ) {
-                        Text(text = "Yes", color = Color.White)
-                    }
-
-                    Button(
                         onClick = { onDismissRequest() },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
                     ) {
                         Text(text = "No", color = Color.White)
+                    }
+
+                    Button(
+                        onClick = { onDeleteExercise(exercise) },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                    ) {
+                        Text(text = "Yes", color = Color.White)
                     }
                 }
             }

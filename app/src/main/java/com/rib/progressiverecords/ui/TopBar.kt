@@ -1,9 +1,6 @@
 package com.rib.progressiverecords.ui
 
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
@@ -22,6 +19,23 @@ fun TopBar(
         actions = {
             IconButton(onClick = { onClick() }) {
                 Icon(Icons.Filled.Add, contentDescription = "Create session")
+            }
+        }
+    )
+}
+
+@Composable
+fun SessionDetailTopBar (
+    onClick: () -> Unit
+) {
+    TopAppBar(
+        title = { Text(text="") },
+        backgroundColor = Color.DarkGray,
+        contentColor = Color.White,
+        elevation = 5.dp,
+        actions = {
+            TextButton(onClick = { onClick() }) {
+                Text(text = "Exit and save", color = Color.White)
             }
         }
     )

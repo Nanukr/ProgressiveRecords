@@ -23,7 +23,7 @@ fun SessionListScreen(
         topBar = { TopBar(
             onClick = {
                 viewModel.changeDetailedSession(null)
-                navController.navigate("session_detail/ ")
+                navController.navigate("session_detail")
             }
         ) }
     ) { it

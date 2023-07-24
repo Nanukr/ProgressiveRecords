@@ -40,30 +40,14 @@ fun Navigation(navController: NavHostController) {
                 SessionListScreen(viewModel, navController)
             }
 
-            composable(
-                route = "session_detail/{exercise}",
-                arguments = listOf(
-                    navArgument("exercise") {
-                        type = NavType.StringType
-                    }
-                )
-            ) {
+            composable("session_detail") {
                 val viewModel = it.sharedViewModel<SessionViewModel>(navController)
-                val selectedExercise = it.arguments?.getString("exercise") ?: ""
-                SessionDetailScreen(navController = navController, viewModel = viewModel, selectedExercise = selectedExercise)
+                SessionDetailScreen(navController = navController, viewModel = viewModel)
             }
         }
 
-        composable(
-            route = "exercise/{is_selected}",
-            arguments = listOf(
-                navArgument("is_selected") {
-                    type = NavType.BoolType
-                }
-            )
-        ) {
-            val isSelected = it.arguments?.getBoolean("is_selected") ?: false
-            ExerciseScreen(navController = navController, isBeingSelected = isSelected)
+        composable("exercise") {
+            ExerciseScreen(isBeingSelected = false, onExerciseSelected = {})
         }
     }
 }
