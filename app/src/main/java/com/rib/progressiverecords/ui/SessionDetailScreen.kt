@@ -1,15 +1,27 @@
 package com.rib.progressiverecords.ui
 
+import android.text.format.DateFormat
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -36,7 +48,11 @@ fun SessionDetailScreen(
     viewModel: SessionViewModel,
     navController: NavController
 ) {
-    var addingExercise by rememberSaveable { mutableStateOf(false) }
+    val addingExercise = rememberSaveable { mutableStateOf(false) }
+
+    val changingDate = rememberSaveable { mutableStateOf(false) }
+
+    val savingSession = rememberSaveable { mutableStateOf(false) }
 
     var session = viewModel.detailedSession.collectAsState().value
 
@@ -55,10 +71,10 @@ fun SessionDetailScreen(
     val exerciseSetsList = ExerciseSetsList().organizeRecords(records)
 
     Scaffold (
-        topBar = { SessionDetailTopBar(onClick = { /*TODO*/ })}
+        topBar = { SessionDetailTopBar(onClick = { savingSession.value = true })}
             ) { it
         SetList(
-            sessionId = sessionId,
+            session = session.session,
             exerciseSetsList = exerciseSetsList,
             onUpdateRecords = { record ->
                 val foundRecord = records.find { it.exerciseName == record.exerciseName && it.setNumber == record.setNumber }
@@ -68,16 +84,55 @@ fun SessionDetailScreen(
                     records - foundRecord + record
                 }
                               },
-            selectExercise = { addingExercise = true },
+            onOpenDateDialog = { changingDate.value = true },
+            onUpdateSessionName = {
+                viewModel.changeDetailedSession(
+                    session.copy(session = Session(
+                        id = session.session.id,
+                        sessionName = it,
+                        date = session.session.date
+                    ))
+                )
+            },
+            selectExercise = { addingExercise.value = true },
             viewModel = viewModel,
             navController = navController
         )
 
-        if (addingExercise) {
+        if (changingDate.value) {
+            SessionDatePickerDialog(
+                onDismissRequest = { changingDate.value = false },
+                onSelectDate = {
+                    if (it != null) {
+                        viewModel.changeDetailedSession(
+                            session.copy(session = Session(
+                                id = session.session.id,
+                                sessionName = session.session.sessionName,
+                                date = Date(it)
+                            ))
+                        )
+                    }
+                }
+            )
+        }
+
+        if (savingSession.value) {
+            SaveSessionDialog(
+                onDismissRequest = { savingSession.value = false },
+                onSessionSaved = { saveSessionToDb(
+                    viewModel = viewModel,
+                    navController = navController,
+                    records = records,
+                    session = session.session
+                ) }
+            )
+        }
+
+        if (addingExercise.value) {
             SelectExerciseDialog(
-                onDismissRequest = { addingExercise = false },
+                onDismissRequest = { addingExercise.value = false },
                 onExerciseSelected = { exerciseName ->
-                    addingExercise = false
+                    addingExercise.value = false
                     if (!records.any{ it.exerciseName == exerciseName }) {
                         records = records + createNewRecord(
                             sessionId = sessionId,
@@ -93,16 +148,25 @@ fun SessionDetailScreen(
 
 @Composable
 private fun SetList(
-    sessionId: UUID,
+    session: Session,
     exerciseSetsList: ExerciseSetsList,
     onUpdateRecords: (Record) -> Unit,
+    onUpdateSessionName: (String) -> Unit,
+    onOpenDateDialog: () -> Unit,
     selectExercise: () -> Unit,
     viewModel: SessionViewModel,
     navController: NavController
 ) {
+    val sessionId = session.id
 
     if (exerciseSetsList.totalSets.isEmpty()) {
         Column (modifier = Modifier.fillMaxSize()) {
+            SessionNameAndDate(
+                session = session,
+                onOpenDateDialog = { onOpenDateDialog() },
+                onUpdateSessionName = { onUpdateSessionName(it) }
+            )
+
             AddExerciseButton(selectExercise = { selectExercise() })
 
             Spacer (modifier = Modifier.weight(1f))
@@ -112,6 +176,13 @@ private fun SetList(
 
     } else {
         LazyColumn {
+            item {
+                SessionNameAndDate(
+                    session = session,
+                    onOpenDateDialog = { onOpenDateDialog() },
+                    onUpdateSessionName = { onUpdateSessionName(it) }
+                )
+            }
 
             items(exerciseSetsList.totalSets) {setList  ->
                 if (setList.isNotEmpty()) {
@@ -136,10 +207,37 @@ private fun SetList(
 
 @Composable
 private fun SessionNameAndDate (
-    session: Session
+    session: Session,
+    onOpenDateDialog: () -> Unit,
+    onUpdateSessionName: (String) -> Unit
 ) {
-    Row {
+    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(text = session.sessionName))
+    }
 
+    Row (
+        modifier = Modifier.padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        TextField(
+            value = name,
+            onValueChange = { name = it },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            keyboardActions = KeyboardActions(onDone = { onUpdateSessionName(name.annotatedString.toString()) }),
+            modifier = Modifier.weight(1.5f)
+        )
+
+        Spacer(modifier = Modifier.weight(0.4f))
+
+        Button(
+            onClick = { onOpenDateDialog() },
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray),
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(text = DateFormat.format("dd / MMM / yyyy", session.date).toString(), color = Color.White)
+        }
     }
 }
 
@@ -178,7 +276,17 @@ private fun ExerciseSets(
         )
 
         sets.forEach { record ->
-            SetItem(record, onFinishSet = { onUpdateRecords(it) } )
+            val recordIsSaved = rememberSaveable { mutableStateOf (false) }
+            SetItem(
+                record,
+                onChangeRecordState = {
+                    recordIsSaved.value = ! recordIsSaved.value
+                    if (recordIsSaved.value) {
+                        onUpdateRecords(it)
+                    }
+                                      },
+                recordIsSaved = recordIsSaved.value
+            )
         }
 
         AddSetButton(
@@ -193,7 +301,8 @@ private fun ExerciseSets(
 @Composable
 private fun SetItem(
     record: Record,
-    onFinishSet: (Record) -> Unit
+    onChangeRecordState: (Record) -> Unit,
+    recordIsSaved: Boolean
 ) {
     var repetitions by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(text = record.repetitions.toString()))
@@ -222,7 +331,8 @@ private fun SetItem(
                 value = repetitions,
                 onValueChange = { repetitions = it },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true
+                singleLine = true,
+                enabled = !recordIsSaved
             )
         }
 
@@ -237,12 +347,17 @@ private fun SetItem(
                 value = weight,
                 onValueChange = { weight = it },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true
+                singleLine = true,
+                enabled = !recordIsSaved
             )
         }
 
-        IconButton(onClick = { onFinishSet(record) }) {
-            Icon(Icons.Filled.Check, contentDescription = "Finish set")
+        IconButton(
+            onClick = { onChangeRecordState(record) }
+        ) {
+            Icon(Icons.Filled.Check,
+                contentDescription = "Finish set",
+                modifier = Modifier.background(if (recordIsSaved) { Color.Green } else { Color.Transparent }))
         }
     }
 }
@@ -274,7 +389,7 @@ private fun AddExerciseButton(
         onClick = { selectExercise() },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(horizontal = 16.dp),
         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
     ) {
         Text(text = "Add exercise", color = Color.White)
@@ -318,7 +433,6 @@ private fun SelectExerciseDialog (
 
 @Composable
 private fun SaveSessionDialog (
-    records: List<Record>,
     onDismissRequest: () -> Unit,
     onSessionSaved: () -> Unit
 ) {
@@ -326,7 +440,11 @@ private fun SaveSessionDialog (
         Card {
             Column (modifier = Modifier.padding(8.dp)) {
                 Text(text = "Are you sure you want to save this session? All records with missing information will be deleted")
-                Row (modifier = Modifier.padding(8.dp)) {
+                Row (
+                    modifier = Modifier.padding(8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Button(
                         onClick = { onDismissRequest() },
                         colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
@@ -346,8 +464,45 @@ private fun SaveSessionDialog (
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SessionDatePickerDialog(
+    onDismissRequest: () -> Unit,
+    onSelectDate: (Long?) -> Unit
+) {
+    val datePickerState = rememberDatePickerState()
+    val confirmEnabled = remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
+
+    DatePickerDialog(
+        onDismissRequest = { onDismissRequest() },
+
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                    onSelectDate(datePickerState.selectedDateMillis)
+                },
+                enabled = confirmEnabled.value
+            ) {
+                Text("Ok")
+            }
+        },
+
+        dismissButton = {
+            TextButton(
+                onClick = { onDismissRequest() }
+            ) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
 private fun saveSessionToDb (
     viewModel: SessionViewModel,
+    navController: NavController,
     records: List<Record>,
     session: Session
 ) {
@@ -357,9 +512,13 @@ private fun saveSessionToDb (
         records.forEach {record ->
             if (record.repetitions != 0) {
                 viewModel.addRecord(record)
+                Log.d("Detail", record.toString())
             }
         }
     }
+
+    viewModel.changeDetailedSession(null)
+    navController.navigate("session_list")
 }
 
 private fun cancelAndDelete(
