@@ -1,18 +1,20 @@
 package com.rib.progressiverecords.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.navArgument
 import com.rib.progressiverecords.SessionViewModel
+import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.relations.SessionWithRecords
+import java.util.*
 
 @Composable
 fun SessionListScreen(
@@ -27,16 +29,16 @@ fun SessionListScreen(
             }
         ) }
     ) { it
-        SessionList(viewModel = viewModel)
+        SessionList(viewModel = viewModel, navController = navController)
     }
 }
 
 @Composable
 fun SessionList(
-    modifier: Modifier = Modifier,
-    viewModel: SessionViewModel
+    viewModel: SessionViewModel,
+    navController: NavController
 ) {
-    val sessions = viewModel.sessions.collectAsState(initial = emptyList())
+    val sessions = viewModel.sessions.collectAsState()
 
     if (sessions.value.isEmpty()) {
         Box(
@@ -47,10 +49,16 @@ fun SessionList(
         }
     } else {
         LazyColumn(
-            modifier = modifier
+            modifier = Modifier.padding(8.dp)
         ) {
             items(sessions.value) {session ->
-                SessionItem(session = session)
+                SessionItem(
+                    session = session,
+                    onSelectSession = {
+                        viewModel.changeDetailedSession(it)
+                        navController.navigate("session_detail")
+                    }
+                )
             }
         }
     }
@@ -58,14 +66,20 @@ fun SessionList(
 
 @Composable
 private fun SessionItem(
-    modifier: Modifier = Modifier,
-    session: SessionWithRecords
+    session: SessionWithRecords,
+    onSelectSession: (SessionWithRecords) -> Unit
 ) {
-    val records = session.records
+    var records by remember { mutableStateOf((session.records)) }
+    records = records.sortedWith(
+        compareBy<Record> { it.exerciseName }
+            .thenBy { it.setNumber }
+    )
 
     Column (
-        modifier = modifier
+        modifier = Modifier
             .padding(16.dp)
+            .fillMaxWidth()
+            .clickable { onSelectSession(session) }
     ) {
         Text(
             text = session.session.sessionName,
@@ -75,8 +89,8 @@ private fun SessionItem(
         records.forEach {record ->
             val exerciseName = record.exerciseName
             Row (
-                modifier = modifier
-                    ) {
+                modifier = Modifier.padding(4.dp)
+            ) {
                 Text(
                     text = "$exerciseName x ",
                     style = MaterialTheme.typography.h6

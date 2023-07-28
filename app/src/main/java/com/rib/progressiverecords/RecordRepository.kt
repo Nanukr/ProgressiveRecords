@@ -38,7 +38,6 @@ class RecordRepository private constructor(
         }
     }
 
-
     fun getSessions(): Flow<List<SessionWithRecords>> = database.recordDao().getSessions()
 
     fun getExercises(): Flow<List<Exercise>> = database.recordDao().getExercises()

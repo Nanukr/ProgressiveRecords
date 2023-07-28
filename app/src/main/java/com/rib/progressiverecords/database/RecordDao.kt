@@ -11,14 +11,11 @@ import java.util.*
 
 @Dao
 interface RecordDao {
-    @Insert
+    @Upsert
     suspend fun addSession(session: Session)
 
     @Delete
     suspend fun deleteSession(session: Session)
-
-    @Update
-    suspend fun updateSession(session: Session)
 
     @Transaction
     @Query("SELECT * FROM session ORDER BY date ASC")
@@ -28,15 +25,8 @@ interface RecordDao {
     @Query("SELECT * FROM exercise ORDER BY exerciseName ASC")
     fun getExercises(): Flow<List<Exercise>>
 
-    @Transaction
-    @Query("SELECT * FROM session WHERE id = (:id)")
-    suspend fun getSession(id: UUID): Session
-
-    @Insert
+    @Upsert
     suspend fun addRecord(record: Record)
-
-    @Query("SELECT * FROM record WHERE id = (:id)")
-    suspend fun getRecord(id: UUID): Record
 
     @Upsert
     suspend fun addExercise(exercise: Exercise)

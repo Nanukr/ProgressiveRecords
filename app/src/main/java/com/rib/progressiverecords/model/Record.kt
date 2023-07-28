@@ -9,7 +9,7 @@ data class Record(
     @PrimaryKey val id: UUID,
     val sessionId: UUID,
     val exerciseName: String,
-    val repetitions: Int,
-    val weight: Int,
+    var repetitions: Int,
+    var weight: Int,
     val setNumber: Int
 )

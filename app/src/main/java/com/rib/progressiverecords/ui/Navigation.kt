@@ -75,7 +75,7 @@ fun BottomNavigationBar(
             items.forEach{ item ->
                 val selected = when (item.name) {
                     "Sessions" -> backStackEntry.value?.destination?.route == "session_list"
-                    "Exercises" -> backStackEntry.value?.destination?.route == "exercise/{is_selected}"
+                    "Exercises" -> backStackEntry.value?.destination?.route == "exercise"
                     else -> { false }
                 }
 

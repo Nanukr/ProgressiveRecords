@@ -63,7 +63,7 @@ fun SessionDetailScreen(
 
     val sessionId = session.session.id
 
-    var records by rememberSaveable { mutableStateOf((session.records)) }
+    var records by remember { mutableStateOf((session.records)) }
     records = records.sortedWith(
         compareBy<Record> { it.exerciseName }
             .thenBy { it.setNumber }
@@ -222,10 +222,11 @@ private fun SessionNameAndDate (
     ) {
         TextField(
             value = name,
-            onValueChange = { name = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            onValueChange = {
+                name = it
+                onUpdateSessionName(name.annotatedString.toString())
+                            },
             singleLine = true,
-            keyboardActions = KeyboardActions(onDone = { onUpdateSessionName(name.annotatedString.toString()) }),
             modifier = Modifier.weight(1.5f)
         )
 
@@ -312,6 +313,8 @@ private fun SetItem(
         mutableStateOf(TextFieldValue(text = record.weight.toString()))
     }
 
+    val currentRecord by remember { mutableStateOf(record) }
+
     Row (
         modifier = Modifier
             .padding(8.dp)
@@ -353,7 +356,13 @@ private fun SetItem(
         }
 
         IconButton(
-            onClick = { onChangeRecordState(record) }
+            onClick = {
+                if (!recordIsSaved) {
+                    currentRecord.weight = weight.annotatedString.toString().toInt()
+                    currentRecord.repetitions = repetitions.annotatedString.toString().toInt()
+                }
+                onChangeRecordState(currentRecord)
+            }
         ) {
             Icon(Icons.Filled.Check,
                 contentDescription = "Finish set",
@@ -438,23 +447,25 @@ private fun SaveSessionDialog (
 ) {
     Dialog (onDismissRequest = { onDismissRequest() } ) {
         Card {
-            Column (modifier = Modifier.padding(8.dp)) {
-                Text(text = "Are you sure you want to save this session? All records with missing information will be deleted")
+            Column (modifier = Modifier.padding(16.dp)) {
+                Text(text = "Are you sure you want to save this session? Only checked records will be updated")
                 Row (
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
                         onClick = { onDismissRequest() },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
                         Text(text = "No", color = Color.White)
                     }
 
                     Button(
                         onClick = { onSessionSaved() },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray),
+                        modifier = Modifier.padding(8.dp)
                     ) {
                         Text(text = "Yes", color = Color.White)
                     }
@@ -510,10 +521,7 @@ private fun saveSessionToDb (
         viewModel.addSession(session)
 
         records.forEach {record ->
-            if (record.repetitions != 0) {
-                viewModel.addRecord(record)
-                Log.d("Detail", record.toString())
-            }
+            viewModel.addRecord(record)
         }
     }
 
