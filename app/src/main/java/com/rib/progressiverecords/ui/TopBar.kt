@@ -13,8 +13,8 @@ fun TopBar(
 ) {
     TopAppBar(
         title = { Text(text="") },
-        backgroundColor = Color.DarkGray,
-        contentColor = Color.White,
+        backgroundColor = MaterialTheme.colors.primaryVariant,
+        contentColor = MaterialTheme.colors.onPrimary,
         elevation = 5.dp,
         actions = {
             IconButton(onClick = { onClick() }) {
@@ -30,8 +30,8 @@ fun SessionDetailTopBar (
 ) {
     TopAppBar(
         title = { Text(text="") },
-        backgroundColor = Color.DarkGray,
-        contentColor = Color.White,
+        backgroundColor = MaterialTheme.colors.primaryVariant,
+        contentColor = MaterialTheme.colors.onPrimary,
         elevation = 5.dp,
         actions = {
             TextButton(onClick = { onClick() }) {

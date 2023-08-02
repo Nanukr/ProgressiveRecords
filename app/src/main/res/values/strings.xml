@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">Progressive Records</string>
+
+    <string name="empty_session_list_message">No recorded sessions</string>
+    <string name="session_list_item">%1$s x %2$s</string>
+    <string name="empty_exercise_list_message">No exercises registered</string>
+    <string name="edit_exercise_icon_description">Edit exercise</string>
+    <string name="delete_exercise_icon_description">Delete exercise</string>
+    <string name="upsert_exercise_name_caption">Exercise name: </string>
+    <string name="cancel_button">Cancel</string>
+    <string name="confirm_button">Confirm</string>
+    <string name="confirm_exercise_deletion_message">Are you sure you want to delete the following exercise: %s ? \n\n This will not delete any records containing this exercise</string>
+    <string name="change_exercise_icon_description">Change exercise</string>
+    <string name="set_label">Set</string>
+    <string name="repetitions_label">Repetitions</string>
+    <string name="weight_label">Weight</string>
+    <string name="finish_set_icon_description">Finish set</string>
+    <string name="add_set_button">Add set</string>
+    <string name="add_exercise_button">Add exercise</string>
+    <string name="cancel_session_button">Cancel and discard changes</string>
+    <string name="confirm_save_session_message">Are you sure you want to save this session? Only checked records will be updated</string>
 </resources>

@@ -1,21 +1,20 @@
 package com.rib.progressiverecords.ui
 
 import android.text.format.DateFormat
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
@@ -27,8 +26,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -36,6 +37,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseSetsList
 import com.rib.progressiverecords.ExerciseViewModel
+import com.rib.progressiverecords.R
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
@@ -216,28 +218,38 @@ private fun SessionNameAndDate (
     }
 
     Row (
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         TextField(
+            modifier = Modifier.weight(1.5f),
             value = name,
             onValueChange = {
                 name = it
                 onUpdateSessionName(name.annotatedString.toString())
                             },
             singleLine = true,
-            modifier = Modifier.weight(1.5f)
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.primary,
+                textColor = MaterialTheme.colors.onPrimary,
+                cursorColor = MaterialTheme.colors.onPrimary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(4.dp)
         )
 
-        Spacer(modifier = Modifier.weight(0.4f))
-
-        Button(
+        TextButton(
             onClick = { onOpenDateDialog() },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray),
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = DateFormat.format("dd / MMM / yyyy", session.date).toString(), color = Color.White)
+            Text (
+                text = DateFormat.format("dd / MMM / yyyy", session.date).toString(),
+                color = MaterialTheme.colors.secondary,
+                textAlign = TextAlign.Right
+            )
         }
     }
 }
@@ -247,17 +259,62 @@ private fun ExerciseName (
     selectExercise: () -> Unit,
     exerciseName: String
 ) {
-    Row (
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clickable { selectExercise() }
-    ) {
-        Text(text = exerciseName, color = Color.Black, style = MaterialTheme.typography.h6)
+    Column {
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable { selectExercise() }
+        ) {
+            Text(
+                text = exerciseName,
+                color = MaterialTheme.colors.onBackground,
+                style = MaterialTheme.typography.h6
+            )
 
-        Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
-        Icon(Icons.Filled.MoreVert, contentDescription = "Change exercise")
+            Icon(
+                Icons.Filled.MoreVert,
+                tint = MaterialTheme.colors.onBackground,
+                contentDescription = stringResource(R.string.change_exercise_icon_description)
+            )
+        }
+
+        Row (
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+                ) {
+            Text (
+                modifier = Modifier
+                    .weight(0.5f)
+                    .padding(4.dp)
+                    .fillMaxWidth(),
+                text = stringResource(R.string.set_label),
+                color = MaterialTheme.colors.onBackground,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = stringResource(R.string.repetitions_label),
+                color = MaterialTheme.colors.onBackground,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+            )
+
+            Text (
+                text = stringResource(R.string.weight_label),
+                color = MaterialTheme.colors.onBackground,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+            )
+
+            Spacer(modifier = Modifier.weight(0.5f))
+        }
     }
 }
 
@@ -269,7 +326,8 @@ private fun ExerciseSets(
 ) {
     val exerciseName = sets[0].exerciseName
     Column (
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier
+            .padding(8.dp)
             ) {
         ExerciseName(
             selectExercise = { /*TODO*/ },
@@ -321,52 +379,69 @@ private fun SetItem(
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
             ) {
-        Text(text = "Set number: ${record.setNumber}", modifier = Modifier.weight(1f))
+        Text (
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(0.5f)
+                .padding(4.dp),
+            text = record.setNumber.toString(),
+            color = MaterialTheme.colors.onBackground,
+            textAlign = TextAlign.Center,
+        )
 
-        Column (
+        TextField(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight()
-                .padding(4.dp)
-                ) {
-            Text(text = "Repetitions")
-            TextField(
-                value = repetitions,
-                onValueChange = { repetitions = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                enabled = !recordIsSaved
-            )
-        }
+                .padding(4.dp),
+            value = repetitions,
+            onValueChange = { repetitions = it },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            enabled = !recordIsSaved,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.primary,
+                textColor = MaterialTheme.colors.onPrimary,
+                cursorColor = MaterialTheme.colors.onPrimary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(4.dp)
+        )
 
-        Column (
+        TextField (
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight()
-                .padding(4.dp)
-                ) {
-            Text(text = "Weight")
-            TextField(
-                value = weight,
-                onValueChange = { weight = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                enabled = !recordIsSaved
-            )
-        }
+                .padding(4.dp),
+            value = weight,
+            onValueChange = { weight = it },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            enabled = !recordIsSaved,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.primary,
+                textColor = MaterialTheme.colors.onPrimary,
+                cursorColor = MaterialTheme.colors.onPrimary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(4.dp)
+        )
 
-        IconButton(
+        IconButton (
             onClick = {
                 if (!recordIsSaved) {
                     currentRecord.weight = weight.annotatedString.toString().toInt()
                     currentRecord.repetitions = repetitions.annotatedString.toString().toInt()
                 }
                 onChangeRecordState(currentRecord)
-            }
+            },
+            modifier = Modifier.weight(0.5f)
         ) {
-            Icon(Icons.Filled.Check,
-                contentDescription = "Finish set",
-                modifier = Modifier.background(if (recordIsSaved) { Color.Green } else { Color.Transparent }))
+            Icon (Icons.Filled.Check,
+                contentDescription = stringResource(R.string.finish_set_icon_description),
+                tint = MaterialTheme.colors.onBackground,
+                modifier = Modifier.background(if (recordIsSaved) { Color.Green } else { Color.Transparent })
+            )
         }
     }
 }
@@ -378,15 +453,17 @@ private fun AddSetButton(
     exerciseName: String,
     onExerciseAdded: (Record) -> Unit
 ) {
-    Button(onClick = {
+    TextButton (onClick = {
         onExerciseAdded(createNewRecord(sessionId = sessionId, previousSet = previousSet, exerciseName = exerciseName))
     },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
+            .padding(8.dp)
     ) {
-        Text(text = "Add set", color = Color.White)
+        Text (
+            text = stringResource(R.string.add_set_button),
+            color = MaterialTheme.colors.secondary
+        )
     }
 }
 
@@ -394,14 +471,16 @@ private fun AddSetButton(
 private fun AddExerciseButton(
     selectExercise: () -> Unit
 ) {
-    Button(
+    TextButton (
         onClick = { selectExercise() },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
+            .padding(horizontal = 16.dp)
     ) {
-        Text(text = "Add exercise", color = Color.White)
+        Text (
+            text = stringResource(R.string.add_exercise_button),
+            color = MaterialTheme.colors.secondary
+        )
     }
 }
 
@@ -410,14 +489,16 @@ private fun CancelButton (
     viewModel: SessionViewModel,
     navController: NavController
 ) {
-    Button(
+    TextButton (
         onClick = { cancelAndDelete(viewModel, navController) },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+            .padding(16.dp)
     ) {
-        Text(text = "Cancel and discard changes", color = Color.White)
+        Text (
+            text = stringResource(R.string.cancel_session_button),
+            color = Color.Red
+        )
     }
 }
 
@@ -446,28 +527,44 @@ private fun SaveSessionDialog (
     onSessionSaved: () -> Unit
 ) {
     Dialog (onDismissRequest = { onDismissRequest() } ) {
-        Card {
+        Card (
+            modifier = Modifier.background(color = MaterialTheme.colors.primary)
+                ) {
             Column (modifier = Modifier.padding(16.dp)) {
-                Text(text = "Are you sure you want to save this session? Only checked records will be updated")
+                Text (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    text = stringResource(R.string.confirm_save_session_message),
+                    color = MaterialTheme.colors.onPrimary,
+                    textAlign = TextAlign.Center
+                )
+
                 Row (
-                    modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(
+                    TextButton (
                         onClick = { onDismissRequest() },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red),
                         modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
-                        Text(text = "No", color = Color.White)
+                        Text(
+                            text = stringResource(R.string.cancel_button),
+                            color = MaterialTheme.colors.secondary
+                        )
                     }
 
-                    Button(
+                    TextButton (
                         onClick = { onSessionSaved() },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray),
                         modifier = Modifier.padding(8.dp)
                     ) {
-                        Text(text = "Yes", color = Color.White)
+                        Text(
+                            text = stringResource(R.string.confirm_button),
+                            color = MaterialTheme.colors.secondary
+                        )
                     }
                 }
             }
@@ -485,6 +582,8 @@ private fun SessionDatePickerDialog(
     val confirmEnabled = remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
 
     DatePickerDialog(
+        modifier = Modifier.padding(16.dp),
+
         onDismissRequest = { onDismissRequest() },
 
         confirmButton = {
@@ -495,7 +594,10 @@ private fun SessionDatePickerDialog(
                 },
                 enabled = confirmEnabled.value
             ) {
-                Text("Ok")
+                Text(
+                    text = stringResource(R.string.confirm_button),
+                    color = MaterialTheme.colors.secondary
+                )
             }
         },
 
@@ -503,7 +605,10 @@ private fun SessionDatePickerDialog(
             TextButton(
                 onClick = { onDismissRequest() }
             ) {
-                Text("Cancel")
+                Text(
+                    text = stringResource(R.string.cancel_button),
+                    color = MaterialTheme.colors.secondary
+                )
             }
         }
     ) {

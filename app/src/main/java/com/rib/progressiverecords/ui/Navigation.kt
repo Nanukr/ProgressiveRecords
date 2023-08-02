@@ -5,10 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
@@ -27,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import com.rib.progressiverecords.BottomNavItem
 import com.rib.progressiverecords.SessionViewModel
+import com.rib.progressiverecords.ui.theme.Gray900
 
 @Composable
 fun Navigation(navController: NavHostController) {
@@ -56,7 +54,6 @@ fun Navigation(navController: NavHostController) {
 fun BottomNavigationBar(
     items: List<BottomNavItem>,
     navController: NavController,
-    modifier: Modifier = Modifier,
     bottomBarState: MutableState<Boolean>,
     onItemClick: (BottomNavItem) -> Unit
 ) {
@@ -68,8 +65,7 @@ fun BottomNavigationBar(
         exit = slideOutVertically(targetOffsetY = { it }),
     ) {
         BottomNavigation (
-            modifier = modifier,
-            backgroundColor = Color.DarkGray,
+            backgroundColor = Gray900,
             elevation = 5.dp
         ) {
             items.forEach{ item ->
