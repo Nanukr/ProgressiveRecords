@@ -1,5 +1,6 @@
 package com.rib.progressiverecords.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.ui.theme.StandardTextField
 import kotlinx.coroutines.launch
 
 @Composable
@@ -36,41 +38,59 @@ fun ExerciseScreen(
     isBeingSelected: Boolean,
     onExerciseSelected: (String) -> Unit
 ) {
-    var exerciseBeingModified by rememberSaveable { mutableStateOf<Exercise?>(null) }
-    var exerciseBeingDeleted by rememberSaveable { mutableStateOf<Exercise?>(null) }
+    var exerciseBeingModified by rememberSaveable { mutableStateOf(false) }
+    var exerciseBeingDeleted by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopBar(
-                onClick = { exerciseBeingModified = Exercise("") }
+                onClick = {
+                    exerciseBeingModified = true
+                    viewModel.changeExerciseBeingModified(Exercise(""))
+                }
             )
         }
     ) { it
         ExerciseList(
             viewModel = viewModel,
             onSelectItem = { onExerciseSelected(it) },
-            onEditItem = { exerciseBeingModified = it },
-            onDelete = { exerciseBeingDeleted = it },
+            onEditItem = {
+                exerciseBeingModified = true
+                viewModel.changeExerciseBeingModified(it)
+                         },
+            onDelete = {
+                exerciseBeingDeleted = true
+                viewModel.changeExerciseBeingModified(it)
+                       },
             isBeingSelected = isBeingSelected
         )
 
-        if (exerciseBeingModified != null) {
+        if (exerciseBeingModified) {
             AddExerciseDialog(
-                exercise = exerciseBeingModified!!,
-                onDismissRequest = { exerciseBeingModified = null },
+                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise(""),
+                onDismissRequest = {
+                    exerciseBeingModified = false
+                    viewModel.changeExerciseBeingModified(null)
+                                   },
                 upsertExercise = {
-                    exerciseBeingModified = null
+                    exerciseBeingModified = false
+                    deleteExercise(viewModel.exerciseBeingModified.value!!, viewModel)
+                    viewModel.changeExerciseBeingModified(null)
                     addExerciseToDb(it, viewModel)
                 }
             )
         }
 
-        if (exerciseBeingDeleted != null) {
+        if (exerciseBeingDeleted) {
             DeleteExerciseDialog(
-                exercise = exerciseBeingDeleted!!,
-                onDismissRequest = { exerciseBeingDeleted = null },
+                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise(""),
+                onDismissRequest = {
+                    exerciseBeingDeleted = false
+                    viewModel.changeExerciseBeingModified(null)
+                                   },
                 onDeleteExercise = {
-                    exerciseBeingDeleted = null
+                    exerciseBeingDeleted = false
+                    viewModel.changeExerciseBeingModified(null)
                     deleteExercise(it, viewModel)
                 }
             )
@@ -114,6 +134,10 @@ fun ExerciseList(
                     onDelete = { onDelete(it) },
                     isBeingSelected = isBeingSelected
                 )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(56.dp))
             }
         }
     }
@@ -169,9 +193,7 @@ private fun AddExerciseDialog(
     upsertExercise: (Exercise) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(text = exercise.exerciseName))
-    }
+    var text by rememberSaveable{ mutableStateOf(exercise.exerciseName) }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card (
@@ -187,21 +209,14 @@ private fun AddExerciseDialog(
                     color = MaterialTheme.colors.onPrimary
                 )
 
-                TextField (
-                    modifier = Modifier.padding(8.dp),
-                    value = text,
+                StandardTextField(
+                    entryValue = text,
                     onValueChange = {
                         text = it
-                        exercise.exerciseName = it.annotatedString.toString()
-                    },
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = MaterialTheme.colors.primary,
-                        textColor = MaterialTheme.colors.onPrimary,
-                        cursorColor = MaterialTheme.colors.onPrimary,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(4.dp)
+                        exercise.exerciseName = it
+                                    },
+                    isNumeric = false,
+                    modifier = Modifier.padding(8.dp)
                 )
 
                 Row (
@@ -280,7 +295,7 @@ private fun addExerciseToDb(
     viewModel: ExerciseViewModel
 ) {
     viewModel.viewModelScope.launch {
-        viewModel.addExercise(exercise)
+        viewModel.upsertExercise(exercise)
     }
 }
 

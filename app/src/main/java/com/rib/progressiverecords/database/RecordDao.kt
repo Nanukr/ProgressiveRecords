@@ -29,7 +29,7 @@ interface RecordDao {
     suspend fun addRecord(record: Record)
 
     @Upsert
-    suspend fun addExercise(exercise: Exercise)
+    suspend fun upsertExercise(exercise: Exercise)
 
     @Delete
     suspend fun deleteExercise(exercise: Exercise)

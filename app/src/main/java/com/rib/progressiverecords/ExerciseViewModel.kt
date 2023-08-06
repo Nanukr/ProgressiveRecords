@@ -3,6 +3,7 @@ package com.rib.progressiverecords
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,9 @@ class ExerciseViewModel : ViewModel() {
     val exercises: StateFlow<List<Exercise>>
         get() = _exercises.asStateFlow()
 
+    private val _exerciseBeingModified = MutableStateFlow<Exercise?>(null)
+    val exerciseBeingModified = _exerciseBeingModified.asStateFlow()
+
     init {
         viewModelScope.launch {
 
@@ -24,9 +28,13 @@ class ExerciseViewModel : ViewModel() {
         }
     }
 
-    suspend fun addExercise(exercise: Exercise) {
+    fun changeExerciseBeingModified(exercise: Exercise?) {
+        _exerciseBeingModified.value = exercise
+    }
+
+    suspend fun upsertExercise(exercise: Exercise) {
         viewModelScope.launch {
-            recordRepository.addExercise(exercise)
+            recordRepository.upsertExercise(exercise)
         }
     }
 

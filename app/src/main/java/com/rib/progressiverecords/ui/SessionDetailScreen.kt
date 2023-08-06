@@ -1,12 +1,12 @@
 package com.rib.progressiverecords.ui
 
 import android.text.format.DateFormat
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -22,6 +22,8 @@ import androidx.compose.material3.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +44,9 @@ import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.SessionWithRecords
+import com.rib.progressiverecords.ui.theme.StandardButton
+import com.rib.progressiverecords.ui.theme.StandardOutlinedButton
+import com.rib.progressiverecords.ui.theme.StandardTextField
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -65,11 +70,13 @@ fun SessionDetailScreen(
 
     val sessionId = session.session.id
 
-    var records by remember { mutableStateOf((session.records)) }
+    var records by remember { mutableStateOf((viewModel.detailedRecords)) }
     records = records.sortedWith(
         compareBy<Record> { it.exerciseName }
             .thenBy { it.setNumber }
     )
+    viewModel.detailedRecords = records
+
     val exerciseSetsList = ExerciseSetsList().organizeRecords(records)
 
     Scaffold (
@@ -146,6 +153,7 @@ fun SessionDetailScreen(
             )
         }
     }
+    Log.d("Detail", exerciseSetsList.totalSets.toString())
 }
 
 @Composable
@@ -213,9 +221,7 @@ private fun SessionNameAndDate (
     onOpenDateDialog: () -> Unit,
     onUpdateSessionName: (String) -> Unit
 ) {
-    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(text = session.sessionName))
-    }
+    var name by rememberSaveable { mutableStateOf(session.sessionName) }
 
     Row (
         modifier = Modifier
@@ -223,34 +229,23 @@ private fun SessionNameAndDate (
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        TextField(
-            modifier = Modifier.weight(1.5f),
-            value = name,
+        StandardTextField(
+            entryValue = name,
             onValueChange = {
-                name = it
-                onUpdateSessionName(name.annotatedString.toString())
-                            },
-            singleLine = true,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.primary,
-                textColor = MaterialTheme.colors.onPrimary,
-                cursorColor = MaterialTheme.colors.onPrimary,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(4.dp)
+                            name = it
+                onUpdateSessionName(name)
+            },
+            isNumeric = false,
+            modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
         )
 
-        TextButton(
+        StandardButton(
             onClick = { onOpenDateDialog() },
-            modifier = Modifier.weight(1f)
-        ) {
-            Text (
-                text = DateFormat.format("dd / MMM / yyyy", session.date).toString(),
-                color = MaterialTheme.colors.secondary,
-                textAlign = TextAlign.Right
-            )
-        }
+            text = DateFormat.format("dd / MMM / yyyy", session.date).toString(),
+            textAlign = TextAlign.Right
+        )
     }
 }
 
@@ -337,7 +332,7 @@ private fun ExerciseSets(
         sets.forEach { record ->
             val recordIsSaved = rememberSaveable { mutableStateOf (false) }
             SetItem(
-                record,
+                record = record,
                 onChangeRecordState = {
                     recordIsSaved.value = ! recordIsSaved.value
                     if (recordIsSaved.value) {
@@ -363,13 +358,9 @@ private fun SetItem(
     onChangeRecordState: (Record) -> Unit,
     recordIsSaved: Boolean
 ) {
-    var repetitions by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(text = record.repetitions.toString()))
-    }
+    var repetitions by rememberSaveable{ mutableStateOf(record.repetitions.toString()) }
 
-    var weight by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(text = record.weight.toString()))
-    }
+    var weight by rememberSaveable { mutableStateOf(record.weight.toString()) }
 
     val currentRecord by remember { mutableStateOf(record) }
 
@@ -389,49 +380,29 @@ private fun SetItem(
             textAlign = TextAlign.Center,
         )
 
-        TextField(
-            modifier = Modifier
-                .weight(1f)
-                .padding(4.dp),
-            value = repetitions,
+        StandardTextField(
+            entryValue = repetitions,
             onValueChange = { repetitions = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            enabled = !recordIsSaved,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.primary,
-                textColor = MaterialTheme.colors.onPrimary,
-                cursorColor = MaterialTheme.colors.onPrimary,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(4.dp)
+            modifier = Modifier
+                .weight(1f),
+            isNumeric = true,
+            isEnabled = !recordIsSaved
         )
 
-        TextField (
-            modifier = Modifier
-                .weight(1f)
-                .padding(4.dp),
-            value = weight,
+        StandardTextField(
+            entryValue = weight,
             onValueChange = { weight = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            enabled = !recordIsSaved,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.primary,
-                textColor = MaterialTheme.colors.onPrimary,
-                cursorColor = MaterialTheme.colors.onPrimary,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(4.dp)
+            modifier = Modifier
+                .weight(1f),
+            isNumeric = true,
+            isEnabled = !recordIsSaved
         )
 
         IconButton (
             onClick = {
                 if (!recordIsSaved) {
-                    currentRecord.weight = weight.annotatedString.toString().toInt()
-                    currentRecord.repetitions = repetitions.annotatedString.toString().toInt()
+                    currentRecord.weight = weight.toInt()
+                    currentRecord.repetitions = repetitions.toInt()
                 }
                 onChangeRecordState(currentRecord)
             },
@@ -453,35 +424,25 @@ private fun AddSetButton(
     exerciseName: String,
     onExerciseAdded: (Record) -> Unit
 ) {
-    TextButton (onClick = {
-        onExerciseAdded(createNewRecord(sessionId = sessionId, previousSet = previousSet, exerciseName = exerciseName))
-    },
+    StandardOutlinedButton (
+        onClick = { onExerciseAdded(createNewRecord(sessionId = sessionId, previousSet = previousSet, exerciseName = exerciseName)) },
+        text = stringResource(R.string.add_set_button),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Text (
-            text = stringResource(R.string.add_set_button),
-            color = MaterialTheme.colors.secondary
-        )
-    }
+    )
 }
 
 @Composable
 private fun AddExerciseButton(
     selectExercise: () -> Unit
 ) {
-    TextButton (
+    StandardOutlinedButton(
         onClick = { selectExercise() },
+        text = stringResource(R.string.add_exercise_button),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        Text (
-            text = stringResource(R.string.add_exercise_button),
-            color = MaterialTheme.colors.secondary
-        )
-    }
+            .padding(horizontal = 8.dp)
+    )
 }
 
 @Composable
@@ -489,17 +450,14 @@ private fun CancelButton (
     viewModel: SessionViewModel,
     navController: NavController
 ) {
-    TextButton (
+    StandardOutlinedButton(
         onClick = { cancelAndDelete(viewModel, navController) },
+        text = stringResource(R.string.cancel_session_button),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text (
-            text = stringResource(R.string.cancel_session_button),
-            color = Color.Red
-        )
-    }
+            .padding(8.dp),
+        textColor = Color.Red
+    )
 }
 
 @Composable
@@ -631,6 +589,7 @@ private fun saveSessionToDb (
     }
 
     viewModel.changeDetailedSession(null)
+    viewModel.detailedRecords = emptyList()
     navController.navigate("session_list")
 }
 
@@ -639,6 +598,7 @@ private fun cancelAndDelete(
     navController: NavController
 ) {
     viewModel.changeDetailedSession(null)
+    viewModel.detailedRecords = emptyList()
     navController.navigate("session_list")
 }
 

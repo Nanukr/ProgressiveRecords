@@ -21,6 +21,8 @@ class SessionViewModel : ViewModel() {
     private val _detailedSession = MutableStateFlow<SessionWithRecords?>(null)
     val detailedSession = _detailedSession.asStateFlow()
 
+    var detailedRecords = detailedSession.value?.records ?: emptyList()
+
     init {
         viewModelScope.launch {
             recordRepository.getSessions().collect {

@@ -70,6 +70,10 @@ fun SessionList(
                     }
                 )
             }
+
+            item {
+                Spacer(modifier = Modifier.height(56.dp))
+            }
         }
     }
 }
@@ -84,6 +88,7 @@ private fun SessionItem(
         compareBy<Record> { it.exerciseName }
             .thenBy { it.setNumber }
     )
+
     Column (
         modifier = Modifier
             .padding(16.dp)
