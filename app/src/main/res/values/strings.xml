@@ -1,16 +1,12 @@
 <resources>
     <string name="app_name">Progressive Records</string>
 
+    //Session list
     <string name="empty_session_list_message">No recorded sessions</string>
-    <string name="session_list_item">%1$s x %2$s</string>
     <string name="empty_exercise_list_message">No exercises registered</string>
-    <string name="edit_exercise_icon_description">Edit exercise</string>
-    <string name="delete_exercise_icon_description">Delete exercise</string>
-    <string name="upsert_exercise_name_caption">Exercise name: </string>
-    <string name="cancel_button">Cancel</string>
-    <string name="confirm_button">Confirm</string>
-    <string name="confirm_exercise_deletion_message">Are you sure you want to delete the following exercise: %s ? \n\n This will not delete any records containing this exercise</string>
-    <string name="change_exercise_icon_description">Change exercise</string>
+    <string name="create_session_icon_description">Create session</string>
+
+    //Session creation
     <string name="set_label">Set</string>
     <string name="repetitions_label">Repetitions</string>
     <string name="weight_label">Weight</string>
@@ -18,5 +14,32 @@
     <string name="add_set_button">Add set</string>
     <string name="add_exercise_button">Add exercise</string>
     <string name="cancel_session_button">Cancel and discard changes</string>
-    <string name="confirm_save_session_message">Are you sure you want to save this session? Only checked records will be updated</string>
+    <string name="save_session_top_message">End and save session?</string>
+    <string name="save_session_bottom_message">Only checked records will be updated</string>
+    <string name="save_session_error_message">You can\'t save a session with no records</string>
+    <string name="save_session_icon_description">Exit and save</string>
+    <string name="new_session_name">New session</string>
+
+    //Session detail
+    <string name="exercise_label">Exercise: %s</string>
+    <string name="edit_detailed_session_icon_description">Edit current session</string>
+    <string name="back_button_icon_description">Go back</string>
+    <string name="session_list_exercise_item">x %s reps</string>
+    <string name="reps_label">reps</string>
+    <string name="delete_session_dialog_top_message">Delete session?</string>
+    <string name="delete_session_dialog_bottom_message">This action cannot be undone</string>
+
+    //Exercise list
+    <string name="edit_exercise_icon_description">Edit exercise</string>
+    <string name="delete_exercise_icon_description">Delete exercise</string>
+    <string name="upsert_exercise_name_caption">Exercise name: </string>
+    <string name="confirm_exercise_deletion_message">Are you sure you want to delete the following exercise: %s ? \n\n This will not delete any records containing this exercise</string>
+    <string name="change_exercise_icon_description">Change exercise</string>
+    <string name="create_exercise_icon_description">Create exercise</string>
+
+
+    //Miscellaneous
+    <string name="cancel_button">Cancel</string>
+    <string name="confirm_button">Confirm</string>
+
 </resources>

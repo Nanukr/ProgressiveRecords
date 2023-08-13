@@ -33,4 +33,8 @@ interface RecordDao {
 
     @Delete
     suspend fun deleteExercise(exercise: Exercise)
+
+    @Transaction
+    @Query("DELETE FROM record WHERE sessionId IN (SELECT id FROM session WHERE id = :sessionId)")
+    suspend fun deleteRecordsInSession(sessionId: UUID)
 }

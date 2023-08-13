@@ -54,6 +54,18 @@ class RecordRepository private constructor(
         }
     }
 
+    suspend fun deleteSession(session: Session) {
+        coroutineScope.launch{
+            database.recordDao().deleteSession(session)
+        }
+    }
+
+    suspend fun deleteRecordsInSession(sessionId: UUID) {
+        coroutineScope.launch{
+            database.recordDao().deleteRecordsInSession(sessionId)
+        }
+    }
+
     companion object {
         private var INSTANCE: RecordRepository? = null
 

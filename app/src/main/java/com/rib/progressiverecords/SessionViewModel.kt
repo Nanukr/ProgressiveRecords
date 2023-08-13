@@ -18,10 +18,11 @@ class SessionViewModel : ViewModel() {
     val sessions: StateFlow<List<SessionWithRecords>>
         get() = _sessions.asStateFlow()
 
-    private val _detailedSession = MutableStateFlow<SessionWithRecords?>(null)
-    val detailedSession = _detailedSession.asStateFlow()
+    var detailedSession: SessionWithRecords? = null
 
-    var detailedRecords = detailedSession.value?.records ?: emptyList()
+    var createdSession: Session? = null
+
+    var newRecords = emptyList<Record>()
 
     init {
         viewModelScope.launch {
@@ -29,10 +30,6 @@ class SessionViewModel : ViewModel() {
                 _sessions.value = it
             }
         }
-    }
-
-    fun changeDetailedSession(session: SessionWithRecords?) {
-        _detailedSession.value = session
     }
 
     suspend fun addSession(session: Session) {
@@ -44,6 +41,18 @@ class SessionViewModel : ViewModel() {
     suspend fun addRecord(record: Record) {
         viewModelScope.launch {
             recordRepository.addRecord(record)
+        }
+    }
+
+    suspend fun deleteSession(session: Session) {
+        viewModelScope.launch {
+            recordRepository.deleteSession(session)
+        }
+    }
+
+    suspend fun deleteRecordsInSession(sessionId: UUID) {
+        viewModelScope.launch {
+            recordRepository.deleteRecordsInSession(sessionId)
         }
     }
 }

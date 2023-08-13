@@ -1,6 +1,5 @@
 package com.rib.progressiverecords.ui
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -10,8 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,7 +21,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import com.rib.progressiverecords.BottomNavItem
 import com.rib.progressiverecords.SessionViewModel
-import com.rib.progressiverecords.ui.theme.Gray900
 
 @Composable
 fun Navigation(navController: NavHostController) {
@@ -36,6 +32,11 @@ fun Navigation(navController: NavHostController) {
             composable("session_list") {
                 val viewModel = it.sharedViewModel<SessionViewModel>(navController)
                 SessionListScreen(viewModel, navController)
+            }
+
+            composable("session_creation") {
+                val viewModel = it.sharedViewModel<SessionViewModel>(navController)
+                SessionCreationScreen(navController = navController, viewModel = viewModel)
             }
 
             composable("session_detail") {
@@ -65,7 +66,7 @@ fun BottomNavigationBar(
         exit = slideOutVertically(targetOffsetY = { it }),
     ) {
         BottomNavigation (
-            backgroundColor = Gray900,
+            backgroundColor = MaterialTheme.colors.primary,
             elevation = 5.dp
         ) {
             items.forEach{ item ->
@@ -78,11 +79,14 @@ fun BottomNavigationBar(
                 BottomNavigationItem(
                     selected = selected,
                     onClick = { onItemClick(item) },
-                    selectedContentColor = Color.White,
-                    unselectedContentColor = Color.Gray,
+                    selectedContentColor = MaterialTheme.colors.secondary,
+                    unselectedContentColor = MaterialTheme.colors.onPrimary,
                     icon = {
                         Column(horizontalAlignment = CenterHorizontally) {
-                            Icon(imageVector = item.icon, contentDescription = item.name)
+                            Icon(
+                                painter = item.icon,
+                                contentDescription = item.name
+                            )
 
                             if (selected) {
                                 Text (

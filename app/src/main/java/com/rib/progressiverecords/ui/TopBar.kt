@@ -1,42 +1,37 @@
 package com.rib.progressiverecords.ui
 
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun TopBar(
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    icon: Painter,
+    contentDescription: String,
+    endAlignment: Boolean = true
 ) {
     TopAppBar(
-        title = { Text(text="") },
-        backgroundColor = MaterialTheme.colors.primaryVariant,
+        backgroundColor = MaterialTheme.colors.primary,
         contentColor = MaterialTheme.colors.onPrimary,
         elevation = 5.dp,
-        actions = {
-            IconButton(onClick = { onClick() }) {
-                Icon(Icons.Filled.Add, contentDescription = "Create session")
+    ) {
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (endAlignment) {Arrangement.End} else {Arrangement.Start}
+        ) {
+            IconButton(
+                modifier = Modifier.padding(8.dp),
+                onClick = { onClick() }
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = contentDescription
+                )
             }
         }
-    )
-}
-
-@Composable
-fun SessionDetailTopBar (
-    onClick: () -> Unit
-) {
-    TopAppBar(
-        title = { Text(text="") },
-        backgroundColor = MaterialTheme.colors.primaryVariant,
-        contentColor = MaterialTheme.colors.onPrimary,
-        elevation = 5.dp,
-        actions = {
-            TextButton(onClick = { onClick() }) {
-                Text(text = "Exit and save", color = Color.White)
-            }
-        }
-    )
+    }
 }
