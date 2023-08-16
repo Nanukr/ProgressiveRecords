@@ -14,8 +14,17 @@ interface RecordDao {
     @Upsert
     suspend fun addSession(session: Session)
 
+    @Upsert
+    suspend fun addRecord(record: Record)
+
+    @Upsert
+    suspend fun upsertExercise(exercise: Exercise)
+
     @Delete
     suspend fun deleteSession(session: Session)
+
+    @Delete
+    suspend fun deleteExercise(exercise: Exercise)
 
     @Transaction
     @Query("SELECT * FROM session ORDER BY date ASC")
@@ -24,15 +33,6 @@ interface RecordDao {
     @Transaction
     @Query("SELECT * FROM exercise ORDER BY exerciseName ASC")
     fun getExercises(): Flow<List<Exercise>>
-
-    @Upsert
-    suspend fun addRecord(record: Record)
-
-    @Upsert
-    suspend fun upsertExercise(exercise: Exercise)
-
-    @Delete
-    suspend fun deleteExercise(exercise: Exercise)
 
     @Transaction
     @Query("DELETE FROM record WHERE sessionId IN (SELECT id FROM session WHERE id = :sessionId)")

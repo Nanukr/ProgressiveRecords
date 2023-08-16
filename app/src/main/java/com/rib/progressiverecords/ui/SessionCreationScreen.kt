@@ -61,7 +61,8 @@ fun SessionCreationScreen(
 
     var records by remember { mutableStateOf((viewModel.newRecords)) }
     records = records.sortedWith(
-        compareBy<Record> { it.exerciseName }
+        compareBy<Record> { it.sessionPosition }
+            .thenBy { it.exerciseName }
             .thenBy { it.setNumber }
     )
 
@@ -132,14 +133,16 @@ fun SessionCreationScreen(
                 onDismissRequest = { addingExercise.value = false },
                 onExerciseSelected = { exerciseName ->
                     addingExercise.value = false
-                    if (!records.any{ it.exerciseName == exerciseName }) {
-                        records = records + createNewRecord(
-                            sessionId = session.id,
-                            previousSet = 0,
-                            exerciseName = exerciseName
-                        )
-                        viewModel.newRecords = records
-                    }
+
+                    val lastExercisePosition = if (records.isEmpty()) { 0 } else { records[records.lastIndex].sessionPosition }
+
+                    records = records + createNewRecord(
+                        sessionId = session.id,
+                        previousSet = 0,
+                        exerciseName = exerciseName,
+                        sessionPosition = lastExercisePosition + 1
+                    )
+                    viewModel.newRecords = records
                 }
             )
         }
@@ -339,7 +342,8 @@ private fun ExerciseSets(
             sessionId = sessionId,
             previousSet = sets.last().setNumber,
             exerciseName = exerciseName,
-            onExerciseAdded = { onUpdateRecords(it) }
+            onExerciseAdded = { onUpdateRecords(it) },
+            sessionPosition = sets[0].sessionPosition
         )
     }
 }
@@ -394,7 +398,7 @@ private fun SetItem(
             checked = recordIsSaved,
             onCheckedChange = {
                 if (!recordIsSaved) {
-                    currentRecord.value.weight = weight.toInt()
+                    currentRecord.value.weight = weight.toFloat()
                     currentRecord.value.repetitions = repetitions.toInt()
                 }
                 onChangeRecordState(currentRecord.value)
@@ -410,10 +414,11 @@ private fun AddSetButton(
     sessionId: UUID,
     previousSet: Int,
     exerciseName: String,
+    sessionPosition: Int,
     onExerciseAdded: (Record) -> Unit
 ) {
     StandardOutlinedButton (
-        onClick = { onExerciseAdded(createNewRecord(sessionId = sessionId, previousSet = previousSet, exerciseName = exerciseName)) },
+        onClick = { onExerciseAdded(createNewRecord(sessionId = sessionId, previousSet = previousSet, exerciseName = exerciseName, sessionPosition = sessionPosition)) },
         text = stringResource(R.string.add_set_button),
         modifier = Modifier
             .fillMaxWidth()
@@ -626,14 +631,16 @@ private fun cancelAndDelete(
 private fun createNewRecord(
     sessionId: UUID,
     previousSet: Int,
-    exerciseName: String
+    exerciseName: String,
+    sessionPosition: Int
 ): Record {
     return Record(
         id = UUID.randomUUID(),
         sessionId = sessionId,
         exerciseName = exerciseName,
         repetitions = 0,
-        weight = 0,
-        setNumber = previousSet + 1
+        weight = 0.0f,
+        setNumber = previousSet + 1,
+        sessionPosition = sessionPosition
     )
 }

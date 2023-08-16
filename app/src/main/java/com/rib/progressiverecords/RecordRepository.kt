@@ -3,6 +3,7 @@ package com.rib.progressiverecords
 import android.content.Context
 import androidx.room.Room
 import com.rib.progressiverecords.database.RecordDatabase
+import com.rib.progressiverecords.database.migration_1_2
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.*
 
+private const val DATABASE_NAME = "RecordDatabase"
 
 class RecordRepository private constructor(
     context: Context,
@@ -24,8 +26,10 @@ class RecordRepository private constructor(
     private val database: RecordDatabase = Room.databaseBuilder(
         context.applicationContext,
         RecordDatabase::class.java,
-        "RecordDatabase"
-    ).build()
+        DATABASE_NAME
+    )
+    .addMigrations(migration_1_2)
+    .build()
 
     suspend fun addSession(session: Session) {
         coroutineScope.launch{

@@ -10,6 +10,7 @@ data class Record(
     val sessionId: UUID,
     val exerciseName: String,
     var repetitions: Int,
-    var weight: Int,
-    val setNumber: Int
+    var weight: Float,
+    val setNumber: Int,
+    val sessionPosition: Int
 )
