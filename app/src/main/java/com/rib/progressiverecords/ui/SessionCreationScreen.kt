@@ -35,6 +35,7 @@ import com.rib.progressiverecords.*
 import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
+import com.rib.progressiverecords.model.TimeLength
 import com.rib.progressiverecords.ui.theme.StandardButton
 import com.rib.progressiverecords.ui.theme.StandardOutlinedButton
 import com.rib.progressiverecords.ui.theme.StandardTextField
@@ -62,7 +63,6 @@ fun SessionCreationScreen(
     var records by remember { mutableStateOf((viewModel.newRecords)) }
     records = records.sortedWith(
         compareBy<Record> { it.sessionPosition }
-            .thenBy { it.exerciseName }
             .thenBy { it.setNumber }
     )
 
@@ -94,6 +94,7 @@ fun SessionCreationScreen(
                     sessionName = it,
                     date = session.date
                 )
+                viewModel.createdSession = session
             },
             selectExercise = { addingExercise.value = true },
             viewModel = viewModel,
@@ -110,6 +111,7 @@ fun SessionCreationScreen(
                             sessionName = session.sessionName,
                             date = Date(it)
                         )
+                        viewModel.createdSession = session
                     }
                 }
             )
@@ -134,13 +136,16 @@ fun SessionCreationScreen(
                 onExerciseSelected = { exerciseName ->
                     addingExercise.value = false
 
+                    //val category = viewModel.getCategoryWithExerciseName(exerciseName)
+
                     val lastExercisePosition = if (records.isEmpty()) { 0 } else { records[records.lastIndex].sessionPosition }
 
                     records = records + createNewRecord(
                         sessionId = session.id,
                         previousSet = 0,
                         exerciseName = exerciseName,
-                        sessionPosition = lastExercisePosition + 1
+                        sessionPosition = lastExercisePosition + 1,
+                        category = ""
                     )
                     viewModel.newRecords = records
                 }
@@ -245,7 +250,7 @@ private fun SessionNameAndDate (
 }
 
 @Composable
-private fun ExerciseName (
+private fun ExerciseHeader (
     selectExercise: () -> Unit,
     exerciseName: String
 ) {
@@ -319,7 +324,7 @@ private fun ExerciseSets(
         modifier = Modifier
             .padding(8.dp)
             ) {
-        ExerciseName(
+        ExerciseHeader(
             selectExercise = { /*TODO*/ },
             exerciseName = exerciseName
         )
@@ -418,7 +423,15 @@ private fun AddSetButton(
     onExerciseAdded: (Record) -> Unit
 ) {
     StandardOutlinedButton (
-        onClick = { onExerciseAdded(createNewRecord(sessionId = sessionId, previousSet = previousSet, exerciseName = exerciseName, sessionPosition = sessionPosition)) },
+        onClick = { onExerciseAdded(
+            createNewRecord(
+                sessionId = sessionId,
+                previousSet = previousSet,
+                exerciseName = exerciseName,
+                sessionPosition = sessionPosition,
+                category = "standard"
+            )
+        ) },
         text = stringResource(R.string.add_set_button),
         modifier = Modifier
             .fillMaxWidth()
@@ -632,15 +645,32 @@ private fun createNewRecord(
     sessionId: UUID,
     previousSet: Int,
     exerciseName: String,
-    sessionPosition: Int
+    sessionPosition: Int,
+    category: String
 ): Record {
+    val reps = if (category != "duration") { 0 } else { null }
+    val weight = if (category != "repsOnly" && category != "duration") { 0f } else { null }
+    val duration = if (category == "duration") { TimeLength(0, 0, 0) } else { null }
+
     return Record(
         id = UUID.randomUUID(),
         sessionId = sessionId,
         exerciseName = exerciseName,
-        repetitions = 0,
-        weight = 0.0f,
+        sessionPosition = sessionPosition,
         setNumber = previousSet + 1,
-        sessionPosition = sessionPosition
+        repetitions = reps,
+        weight = weight,
+        exerciseDuration = duration
     )
+}
+
+private fun deleteSetInPosition(
+    viewModel: SessionViewModel,
+    position: Int
+) {
+    viewModel.newRecords.forEach { record ->
+        if (record.sessionPosition == position) {
+            viewModel.newRecords -= record
+        }
+    }
 }

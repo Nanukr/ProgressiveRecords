@@ -55,4 +55,6 @@ class SessionViewModel : ViewModel() {
             recordRepository.deleteRecordsInSession(sessionId)
         }
     }
+
+
 }

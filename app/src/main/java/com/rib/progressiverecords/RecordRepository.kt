@@ -46,6 +46,8 @@ class RecordRepository private constructor(
 
     fun getExercises(): Flow<List<Exercise>> = database.recordDao().getExercises()
 
+    fun getCategoryWithExerciseName(exerciseName: String): String = database.recordDao().getCategoryWithExerciseName(exerciseName)
+
     suspend fun upsertExercise(exercise: Exercise) {
         coroutineScope.launch{
             database.recordDao().upsertExercise(exercise)

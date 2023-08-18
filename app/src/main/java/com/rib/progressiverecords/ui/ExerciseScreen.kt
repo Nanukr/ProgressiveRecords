@@ -44,7 +44,7 @@ fun ExerciseScreen(
             TopBar(
                 onClick = {
                     exerciseBeingModified = true
-                    viewModel.changeExerciseBeingModified(Exercise("", 0, "", ""))
+                    viewModel.changeExerciseBeingModified(Exercise("", 0, "", "", 0))
                 },
                 icon = painterResource(R.drawable.ic_add),
                 contentDescription = stringResource(R.string.create_exercise_icon_description)
@@ -67,7 +67,7 @@ fun ExerciseScreen(
 
         if (exerciseBeingModified) {
             AddExerciseDialog(
-                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise("", 0, "", ""),
+                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise("", 0, "", "", 0),
                 onDismissRequest = {
                     exerciseBeingModified = false
                     viewModel.changeExerciseBeingModified(null)
@@ -83,7 +83,7 @@ fun ExerciseScreen(
 
         if (exerciseBeingDeleted) {
             DeleteExerciseDialog(
-                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise("", 0, "", ""),
+                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise("", 0, "", "", 0),
                 onDismissRequest = {
                     exerciseBeingDeleted = false
                     viewModel.changeExerciseBeingModified(null)

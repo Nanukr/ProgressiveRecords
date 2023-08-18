@@ -25,19 +25,20 @@ val migration_1_2 = object: Migration(1, 2) {
                     "id BLOB NOT NULL PRIMARY KEY," +
                     "sessionId BLOB NOT NULL," +
                     "exerciseName TEXT NOT NULL," +
+                    "sessionPosition INTEGER NOT NULL, " +
+                    "setNumber INTEGER NOT NULL, " +
                     "repetitions INTEGER, " +
                     "weight REAL, " +
-                    "setNumber INTEGER NOT NULL, " +
-                    "sessionPosition INTEGER NOT NULL DEFAULT 0" +
+                    "exerciseDuration INTEGER" +
                     ")"
         )
 
         database.execSQL(
             "INSERT INTO UpdatedRecord (" +
-                    "id, sessionId, exerciseName, repetitions, weight, setNumber, sessionPosition" +
+                    "id, sessionId, exerciseName, sessionPosition, setNumber, repetitions, weight" +
                     ") " +
                     "SELECT " +
-                    "id, sessionId, exerciseName, repetitions, CAST(weight AS REAL), setNumber, 0" +
+                    "id, sessionId, exerciseName, 0, setNumber, repetitions, CAST(weight AS REAL)" +
                     " FROM Record"
         )
 
@@ -46,15 +47,19 @@ val migration_1_2 = object: Migration(1, 2) {
         database.execSQL("ALTER TABLE UpdatedRecord RENAME TO Record")
 
         database.execSQL(
-            "ALTER TABLE Exercise ADD COLUMN isDefault INT NOT NULL DEFAULT 1"
+            "ALTER TABLE Exercise ADD COLUMN isDefault INTEGER NOT NULL DEFAULT 1"
         )
 
         database.execSQL(
-            "ALTER TABLE Exercise ADD COLUMN primMuscle STRING NOT NULL DEFAULT ''"
+            "ALTER TABLE Exercise ADD COLUMN primMuscle TEXT NOT NULL DEFAULT ''"
         )
 
         database.execSQL(
-            "ALTER TABLE Exercise ADD COLUMN category STRING NOT NULL DEFAULT ''"
+            "ALTER TABLE Exercise ADD COLUMN category TEXT NOT NULL DEFAULT ''"
+        )
+
+        database.execSQL(
+            "ALTER TABLE Exercise ADD COLUMN isAssisted INTEGER NOT NULL DEFAULT 0"
         )
 
         database.execSQL(

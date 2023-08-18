@@ -26,6 +26,9 @@ interface RecordDao {
     @Delete
     suspend fun deleteExercise(exercise: Exercise)
 
+    @Query("SELECT category FROM exercise WHERE exerciseName = :exerciseName")
+    fun getCategoryWithExerciseName(exerciseName: String): String
+
     @Transaction
     @Query("SELECT * FROM session ORDER BY date ASC")
     fun getSessions(): Flow<List<SessionWithRecords>>

@@ -6,6 +6,7 @@ data class ExerciseSetsList(
     val totalSets: List<List<Record>> = emptyList()
 ) {
     fun organizeRecords(records: List<Record>): ExerciseSetsList {
+
         val totalSets: MutableList<List<Record>> = mutableListOf()
         val currentExerciseSets: MutableList<Record> = mutableListOf()
         var currentExercise = ""

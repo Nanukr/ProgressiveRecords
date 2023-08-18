@@ -45,7 +45,10 @@ fun SessionDetailScreen(
             endAlignment = false
         ) }
     ) { it
-        SetList(viewModel = viewModel)
+        SetList(
+            viewModel = viewModel,
+            navController = navController
+        )
     }
 
     BackHandler {
@@ -56,7 +59,8 @@ fun SessionDetailScreen(
 
 @Composable
 private fun SetList(
-    viewModel: SessionViewModel
+    viewModel: SessionViewModel,
+    navController: NavController
 ) {
     var sessionBeingDeleted by rememberSaveable { mutableStateOf(false) }
 
@@ -64,7 +68,7 @@ private fun SetList(
 
     var records by remember { mutableStateOf((viewModel.detailedSession?.records ?: emptyList())) }
     records = records.sortedWith(
-        compareBy<Record> { it.exerciseName }
+        compareBy<Record> { it.sessionPosition }
             .thenBy { it.setNumber }
     )
 
@@ -73,33 +77,10 @@ private fun SetList(
     Column (
         modifier = Modifier.padding(16.dp),
             ) {
-        Row (
-            verticalAlignment = Alignment.CenterVertically
-                ) {
-            Column {
-                Text(
-                    modifier = Modifier.padding(8.dp),
-                    text = session?.sessionName ?: "",
-                    style = MaterialTheme.typography.h6
-                )
-
-                Text(
-                    modifier = Modifier.padding(4.dp),
-                    text = DateFormat.format("dd / MMM / yyyy", session?.date ?: Date()).toString(),
-                    style = MaterialTheme.typography.body1
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Icon(
-                Icons.Filled.MoreVert,
-                tint = MaterialTheme.colors.onBackground,
-                contentDescription = stringResource(R.string.edit_detailed_session_icon_description)
-            )
-        }
-
-        Divider()
+        SessionHeader(
+            session = session,
+            onDeleteSession = { sessionBeingDeleted = true }
+        )
 
         LazyColumn {
             items(exerciseSetsList) { set ->
@@ -113,13 +94,62 @@ private fun SetList(
                 onDeleteSession = {
                     deleteSessionWithRecords(
                         session = it,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        navController = navController
                     )
                 },
                 onDismissRequest = { sessionBeingDeleted = false }
             )
         }
     }
+}
+
+@Composable
+private fun SessionHeader (
+    session: Session?,
+    onDeleteSession: () -> Unit
+) {
+    var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
+    Row (
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                modifier = Modifier.padding(8.dp),
+                text = session?.sessionName ?: "",
+                style = MaterialTheme.typography.h6
+            )
+
+            Text(
+                modifier = Modifier.padding(4.dp),
+                text = DateFormat.format("dd / MMM / yyyy", session?.date ?: Date()).toString(),
+                style = MaterialTheme.typography.body1
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Box(modifier = Modifier
+            .wrapContentSize(Alignment.TopStart)) {
+            IconButton(onClick = { dropdownMenuExpanded = true }) {
+                Icon(Icons.Default.MoreVert,
+                    tint = MaterialTheme.colors.onBackground,
+                    contentDescription = stringResource(R.string.edit_detailed_session_icon_description)
+                )
+            }
+            DropdownMenu(
+                expanded = dropdownMenuExpanded,
+                onDismissRequest = { dropdownMenuExpanded = false }
+            ) {
+                DropdownMenuItem(onClick = { onDeleteSession() }) {
+                    Text("Delete session")
+                }
+            }
+        }
+    }
+
+    Divider()
 }
 
 @Composable
@@ -276,10 +306,14 @@ private fun DeleteSessionDialog(
 
 private fun deleteSessionWithRecords(
     session: Session,
-    viewModel: SessionViewModel
+    viewModel: SessionViewModel,
+    navController: NavController
 ) {
     viewModel.viewModelScope.launch {
         viewModel.deleteRecordsInSession(session.id)
         viewModel.deleteSession(session)
     }
+
+    viewModel.detailedSession = null
+    navController.navigate("session_list")
 }
