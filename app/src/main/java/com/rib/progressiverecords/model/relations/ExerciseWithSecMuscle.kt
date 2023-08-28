@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
 import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
 import com.rib.progressiverecords.model.Muscle
 
 data class ExerciseWithSecMuscle(
@@ -11,7 +12,7 @@ data class ExerciseWithSecMuscle(
     @Relation(
         parentColumn = "exerciseName",
         entityColumn = "muscleName",
-        associateBy = Junction(ExerciseWithSecMuscle::class)
+        associateBy = Junction(ExerciseSecMuscleCrossRef::class)
     )
     val muscles: List<Muscle>
 )

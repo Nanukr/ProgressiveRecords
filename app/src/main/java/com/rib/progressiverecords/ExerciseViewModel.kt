@@ -3,6 +3,8 @@ package com.rib.progressiverecords
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
+import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,12 +14,11 @@ import kotlinx.coroutines.launch
 class ExerciseViewModel : ViewModel() {
     private val recordRepository = RecordRepository.get()
 
-    private val _exercises: MutableStateFlow<List<Exercise>> = MutableStateFlow(emptyList())
-    val exercises: StateFlow<List<Exercise>>
+    private val _exercises: MutableStateFlow<List<ExerciseWithSecMuscle>> = MutableStateFlow(emptyList())
+    val exercises: StateFlow<List<ExerciseWithSecMuscle>>
         get() = _exercises.asStateFlow()
 
-    private val _exerciseBeingModified = MutableStateFlow<Exercise?>(null)
-    val exerciseBeingModified = _exerciseBeingModified.asStateFlow()
+    var exerciseBeingModified: ExerciseWithSecMuscle? = null
 
     init {
         viewModelScope.launch {
@@ -28,19 +29,27 @@ class ExerciseViewModel : ViewModel() {
         }
     }
 
-    fun changeExerciseBeingModified(exercise: Exercise?) {
-        _exerciseBeingModified.value = exercise
+    suspend fun addExercise(exercise: Exercise) {
+        viewModelScope.launch {
+            recordRepository.addExercise(exercise)
+        }
     }
 
-    suspend fun upsertExercise(exercise: Exercise) {
+    suspend fun addExerciseSecMuscleCrossRef(crossRef: ExerciseSecMuscleCrossRef) {
         viewModelScope.launch {
-            recordRepository.upsertExercise(exercise)
+            recordRepository.addExerciseSecMuscleCrossRef(crossRef)
         }
     }
 
     suspend fun deleteExercise(exercise: Exercise) {
         viewModelScope.launch {
             recordRepository.deleteExercise(exercise)
+        }
+    }
+
+    suspend fun deleteExerciseSecMuscles(exerciseName: String) {
+        viewModelScope.launch {
+            recordRepository.deleteExerciseSecMuscles(exerciseName)
         }
     }
 }

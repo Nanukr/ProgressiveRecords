@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import com.rib.progressiverecords.BottomNavItem
+import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.SessionViewModel
 
 @Composable
@@ -46,7 +47,7 @@ fun Navigation(navController: NavHostController) {
         }
 
         composable("exercise") {
-            ExerciseScreen(isBeingSelected = false, onExerciseSelected = {})
+            ExerciseListScreen(isBeingSelected = false, onExerciseSelected = {})
         }
     }
 }

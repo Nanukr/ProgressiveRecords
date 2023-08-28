@@ -156,18 +156,20 @@ private fun SessionHeader (
 private fun SetItem (
     set: List<Record>
 ) {
-    Column (
+    Card (
         modifier = Modifier
-            .padding(vertical = 16.dp)
-            .background(color = MaterialTheme.colors.primary, RoundedCornerShape(16.dp))
-            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        backgroundColor = MaterialTheme.colors.primary,
+        elevation = 4.dp
             ) {
         Column (
             modifier = Modifier
                 .padding(8.dp)
         ) {
             Text(
-                text = stringResource(R.string.exercise_label, set[0].exerciseName),
+                text = "${set[0].sessionPosition}: ${set[0].exerciseName}",
                 color = MaterialTheme.colors.onBackground,
                 modifier = Modifier
                     .padding(8.dp)
@@ -255,7 +257,8 @@ private fun DeleteSessionDialog(
     if (session != null) {
         Dialog(onDismissRequest = onDismissRequest) {
             Card (
-                modifier = Modifier.background(color = MaterialTheme.colors.primaryVariant)
+                backgroundColor = MaterialTheme.colors.primary,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Column (
                     modifier = Modifier.padding(8.dp),

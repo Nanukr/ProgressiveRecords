@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.Card
 import androidx.compose.material.CheckboxDefaults
@@ -476,7 +477,7 @@ private fun SelectExerciseDialog (
         onDismissRequest = { onDismissRequest() }
     ) {
         Surface (modifier = Modifier.fillMaxSize()) {
-            ExerciseScreen(
+            ExerciseListScreen(
                 viewModel = ExerciseViewModel(),
                 isBeingSelected = true,
                 onExerciseSelected = { onExerciseSelected(it) }
@@ -493,7 +494,8 @@ private fun SaveSessionDialog (
 ) {
     Dialog (onDismissRequest = { onDismissRequest() } ) {
         Card (
-            modifier = Modifier.background(color = MaterialTheme.colors.primary)
+            backgroundColor = MaterialTheme.colors.primary,
+            shape = RoundedCornerShape(16.dp)
                 ) {
             if (viewModel.newRecords.isNotEmpty()) {
                 Column (modifier = Modifier.padding(16.dp)) {

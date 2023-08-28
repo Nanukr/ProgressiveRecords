@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -27,11 +28,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
+import com.rib.progressiverecords.model.Muscle
+import com.rib.progressiverecords.model.relations.ExerciseWithRecords
+import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
 import com.rib.progressiverecords.ui.theme.StandardTextField
 import kotlinx.coroutines.launch
 
 @Composable
-fun ExerciseScreen(
+fun ExerciseListScreen(
     viewModel: ExerciseViewModel = viewModel(),
     isBeingSelected: Boolean,
     onExerciseSelected: (String) -> Unit
@@ -44,7 +49,7 @@ fun ExerciseScreen(
             TopBar(
                 onClick = {
                     exerciseBeingModified = true
-                    viewModel.changeExerciseBeingModified(Exercise("", 0, "", "", 0))
+                    viewModel.exerciseBeingModified = createEmptyExercise()
                 },
                 icon = painterResource(R.drawable.ic_add),
                 contentDescription = stringResource(R.string.create_exercise_icon_description)
@@ -56,41 +61,39 @@ fun ExerciseScreen(
             onSelectItem = { onExerciseSelected(it) },
             onEditItem = {
                 exerciseBeingModified = true
-                viewModel.changeExerciseBeingModified(it)
+                viewModel.exerciseBeingModified = it
                          },
             onDelete = {
                 exerciseBeingDeleted = true
-                viewModel.changeExerciseBeingModified(it)
+                viewModel.exerciseBeingModified = it
                        },
             isBeingSelected = isBeingSelected
         )
 
         if (exerciseBeingModified) {
-            AddExerciseDialog(
-                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise("", 0, "", "", 0),
-                onDismissRequest = {
+            ExerciseCreationDialog(
+                exercise = viewModel.exerciseBeingModified ?: createEmptyExercise(),
+                addExercise = {
                     exerciseBeingModified = false
-                    viewModel.changeExerciseBeingModified(null)
-                                   },
-                upsertExercise = {
-                    exerciseBeingModified = false
-                    deleteExercise(viewModel.exerciseBeingModified.value!!, viewModel)
-                    viewModel.changeExerciseBeingModified(null)
+                    deleteExercise(viewModel.exerciseBeingModified!!, viewModel)
+                    viewModel.exerciseBeingModified = null
                     addExerciseToDb(it, viewModel)
-                }
+                },
+                onDismissRequest = { /*TODO*/ },
+                isBeingEdited = false
             )
         }
 
         if (exerciseBeingDeleted) {
             DeleteExerciseDialog(
-                exercise = viewModel.exerciseBeingModified.collectAsState().value ?: Exercise("", 0, "", "", 0),
+                exercise = viewModel.exerciseBeingModified ?: createEmptyExercise(),
                 onDismissRequest = {
                     exerciseBeingDeleted = false
-                    viewModel.changeExerciseBeingModified(null)
+                    viewModel.exerciseBeingModified = null
                                    },
                 onDeleteExercise = {
                     exerciseBeingDeleted = false
-                    viewModel.changeExerciseBeingModified(null)
+                    viewModel.exerciseBeingModified = null
                     deleteExercise(it, viewModel)
                 }
             )
@@ -103,8 +106,8 @@ fun ExerciseScreen(
 fun ExerciseList(
     viewModel: ExerciseViewModel,
     onSelectItem: (String) -> Unit,
-    onEditItem: (Exercise) -> Unit,
-    onDelete: (Exercise) -> Unit,
+    onEditItem: (ExerciseWithSecMuscle) -> Unit,
+    onDelete: (ExerciseWithSecMuscle) -> Unit,
     isBeingSelected: Boolean
 ) {
     val exercises = viewModel.exercises.collectAsState(initial = emptyList())
@@ -146,24 +149,26 @@ fun ExerciseList(
 
 @Composable
 private fun ExerciseItem(
-    exercise: Exercise,
+    exercise: ExerciseWithSecMuscle,
     onSelect: (String) -> Unit,
-    onEdit: (Exercise) -> Unit,
-    onDelete: (Exercise) -> Unit,
+    onEdit: (ExerciseWithSecMuscle) -> Unit,
+    onDelete: (ExerciseWithSecMuscle) -> Unit,
     isBeingSelected: Boolean
 
 ) {
-    val rowModifier = if (isBeingSelected) {
-        Modifier
+    Row (
+        modifier = Modifier
             .padding(8.dp)
-            .clickable { onSelect(exercise.exerciseName) }
-    } else {
-        Modifier.padding(8.dp)
-    }
-
-    Row (modifier = rowModifier) {
+            .then(
+                if (isBeingSelected) {
+                    Modifier.clickable { onSelect(exercise.exercise.exerciseName) }
+                } else {
+                    Modifier
+                }
+            )
+    ) {
         Text(
-            text = exercise.exerciseName,
+            text = exercise.exercise.exerciseName,
             style = MaterialTheme.typography.h5,
             color = MaterialTheme.colors.onBackground
         )
@@ -189,71 +194,15 @@ private fun ExerciseItem(
 }
 
 @Composable
-private fun AddExerciseDialog(
-    exercise: Exercise,
-    upsertExercise: (Exercise) -> Unit,
-    onDismissRequest: () -> Unit
-) {
-    var text by rememberSaveable{ mutableStateOf(exercise.exerciseName) }
-
-    Dialog(onDismissRequest = { onDismissRequest() }) {
-        Card (
-            modifier = Modifier.background(color = MaterialTheme.colors.primaryVariant)
-                ) {
-            Column (
-                modifier = Modifier
-                    .padding(8.dp)
-                    ) {
-                Text (
-                    modifier = Modifier.padding(8.dp),
-                    text = stringResource(R.string.upsert_exercise_name_caption),
-                    color = MaterialTheme.colors.onPrimary
-                )
-
-                StandardTextField(
-                    entryValue = text,
-                    onValueChange = {
-                        text = it
-                        exercise.exerciseName = it
-                                    },
-                    isNumeric = false,
-                    modifier = Modifier.padding(8.dp)
-                )
-
-                Row (
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    TextButton (onClick = { onDismissRequest() }) {
-                        Text (
-                            text = stringResource(R.string.cancel_button),
-                            color = MaterialTheme.colors.secondary
-                        )
-                    }
-
-                    TextButton (onClick = { upsertExercise(exercise) }) {
-                        Text (
-                            text = stringResource(R.string.confirm_button),
-                            color = MaterialTheme.colors.secondary
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun DeleteExerciseDialog(
-    exercise: Exercise,
-    onDeleteExercise: (Exercise) -> Unit,
+    exercise: ExerciseWithSecMuscle,
+    onDeleteExercise: (ExerciseWithSecMuscle) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Card (
-            modifier = Modifier.background(color = MaterialTheme.colors.primaryVariant)
+            backgroundColor = MaterialTheme.colors.primary,
+            shape = RoundedCornerShape(16.dp)
                 ) {
             Column (
                 modifier = Modifier.padding(8.dp),
@@ -263,7 +212,7 @@ private fun DeleteExerciseDialog(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = stringResource(R.string.confirm_exercise_deletion_message, exercise.exerciseName),
+                    text = stringResource(R.string.confirm_exercise_deletion_message, exercise.exercise.exerciseName),
                     color = MaterialTheme.colors.onPrimary,
                     textAlign = TextAlign.Center
                 )
@@ -292,19 +241,35 @@ private fun DeleteExerciseDialog(
 }
 
 private fun addExerciseToDb(
-    exercise: Exercise,
+    exercise: ExerciseWithSecMuscle,
     viewModel: ExerciseViewModel
 ) {
     viewModel.viewModelScope.launch {
-        viewModel.upsertExercise(exercise)
+        viewModel.addExercise(exercise.exercise)
+
+        exercise.muscles.forEach { muscle ->
+            viewModel.addExerciseSecMuscleCrossRef(ExerciseSecMuscleCrossRef(
+                exerciseName = exercise.exercise.exerciseName,
+                muscleName = muscle.muscleName)
+            )
+        }
     }
 }
 
 private fun deleteExercise(
-    exercise: Exercise,
+    exercise: ExerciseWithSecMuscle,
     viewModel: ExerciseViewModel
 ) {
     viewModel.viewModelScope.launch {
-        viewModel.deleteExercise(exercise)
+        viewModel.deleteExercise(exercise.exercise)
+
+        viewModel.deleteExerciseSecMuscles(exercise.exercise.exerciseName)
     }
+}
+
+fun createEmptyExercise(): ExerciseWithSecMuscle {
+    return ExerciseWithSecMuscle(
+        exercise = Exercise("Example", 0, "Chest", "Barbell", 0),
+        muscles = listOf(Muscle("Shoulders"), Muscle("Triceps"))
+    )
 }

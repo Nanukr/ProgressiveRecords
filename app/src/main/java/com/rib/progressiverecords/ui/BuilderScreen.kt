@@ -28,7 +28,7 @@ fun BuilderScreen(
 
             val currentRoute = navBackStackEntry?.destination?.route
 
-            bottomBarState.value = (currentRoute != "session_creation" && currentRoute != "session_detail")
+            bottomBarState.value = (currentRoute == "session_list" || currentRoute == "exercise")
 
             BottomNavigationBar(
                 items = listOf(

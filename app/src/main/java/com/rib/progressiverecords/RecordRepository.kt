@@ -5,9 +5,11 @@ import androidx.room.Room
 import com.rib.progressiverecords.database.RecordDatabase
 import com.rib.progressiverecords.database.migration_1_2
 import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.ExerciseWithRecords
+import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
@@ -42,15 +44,15 @@ class RecordRepository private constructor(
         }
     }
 
-    fun getSessions(): Flow<List<SessionWithRecords>> = database.recordDao().getSessions()
-
-    fun getExercises(): Flow<List<Exercise>> = database.recordDao().getExercises()
-
-    fun getCategoryWithExerciseName(exerciseName: String): String = database.recordDao().getCategoryWithExerciseName(exerciseName)
-
-    suspend fun upsertExercise(exercise: Exercise) {
+    suspend fun addExercise(exercise: Exercise) {
         coroutineScope.launch{
-            database.recordDao().upsertExercise(exercise)
+            database.recordDao().addExercise(exercise)
+        }
+    }
+
+    suspend fun addExerciseSecMuscleCrossRef(crossRef: ExerciseSecMuscleCrossRef) {
+        coroutineScope.launch{
+            database.recordDao().addExerciseSecMuscleCrossRef(crossRef)
         }
     }
 
@@ -71,6 +73,18 @@ class RecordRepository private constructor(
             database.recordDao().deleteRecordsInSession(sessionId)
         }
     }
+
+    suspend fun deleteExerciseSecMuscles(exerciseName: String) {
+        coroutineScope.launch {
+            database.recordDao().deleteExerciseSecMuscles(exerciseName)
+        }
+    }
+
+    fun getSessions(): Flow<List<SessionWithRecords>> = database.recordDao().getSessions()
+
+    fun getExercises(): Flow<List<ExerciseWithSecMuscle>> = database.recordDao().getExercises()
+
+    fun getCategoryWithExerciseName(exerciseName: String): String = database.recordDao().getCategoryWithExerciseName(exerciseName)
 
     companion object {
         private var INSTANCE: RecordRepository? = null

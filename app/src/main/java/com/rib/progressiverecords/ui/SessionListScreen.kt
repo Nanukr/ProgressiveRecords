@@ -98,12 +98,14 @@ private fun SessionItem(
 
     val exerciseSetsList = ExerciseSetsList().organizeRecords(records).totalSets
 
-    Column (
+    Card (
         modifier = Modifier
             .padding(16.dp)
-            .background(color = MaterialTheme.colors.primary, RoundedCornerShape(16.dp))
             .fillMaxWidth()
-            .clickable { onSelectSession(session) }
+            .clickable { onSelectSession(session) },
+        shape = RoundedCornerShape(16.dp),
+        backgroundColor = MaterialTheme.colors.primary,
+        elevation = 4.dp
     ) {
         Column (
             modifier = Modifier

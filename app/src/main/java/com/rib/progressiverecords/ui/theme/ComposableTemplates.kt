@@ -1,7 +1,6 @@
 package com.rib.progressiverecords.ui.theme
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -11,18 +10,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import com.rib.progressiverecords.R
-import com.rib.progressiverecords.model.Exercise
 
 @Composable
 fun StandardOutlinedButton (
@@ -73,32 +68,35 @@ fun StandardTextField (
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     isNumeric: Boolean,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    borderColor: Color = Color.Transparent,
+    textAlign: TextAlign = TextAlign.Center
 ) {
     var textFieldState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(text = entryValue))
     }
 
-    TextField(
+    OutlinedTextField(
         modifier = modifier
             .padding(4.dp),
         value = textFieldState,
         onValueChange = {
             textFieldState = it
             onValueChange(textFieldState.annotatedString.toString())
-                        },
+        },
         keyboardOptions = KeyboardOptions(keyboardType =
-            if (isNumeric) { KeyboardType.Number} else { KeyboardType.Text }),
+        if (isNumeric) { KeyboardType.Number} else { KeyboardType.Text }),
         singleLine = true,
         enabled = isEnabled,
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.outlinedTextFieldColors(
             backgroundColor = MaterialTheme.colors.primary,
             textColor = MaterialTheme.colors.onPrimary,
             cursorColor = MaterialTheme.colors.onPrimary,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            leadingIconColor = MaterialTheme.colors.onPrimary
+            focusedBorderColor = borderColor,
+            unfocusedBorderColor = borderColor,
+            leadingIconColor = MaterialTheme.colors.onPrimary,
         ),
+        textStyle = TextStyle(textAlign = textAlign),
         shape = RoundedCornerShape(4.dp)
     )
 }
@@ -106,11 +104,23 @@ fun StandardTextField (
 @Composable
 @Preview
 private fun StandardOutlinedButtonPreview() {
-    StandardOutlinedButton(onClick = {}, text = "Example", modifier = Modifier)
+    ProgressiveRecordsTheme {
+        StandardOutlinedButton(onClick = {}, text = "Example", modifier = Modifier)
+    }
 }
 
 @Composable
 @Preview
 private fun StandardButtonPreview() {
-    StandardButton(onClick = {}, text = "Example", modifier = Modifier)
+    ProgressiveRecordsTheme {
+        StandardButton(onClick = {}, text = "Example", modifier = Modifier)
+    }
+}
+
+@Composable
+@Preview
+private fun StandardTextFieldPreview() {
+    ProgressiveRecordsTheme {
+        StandardTextField(entryValue = "Example", onValueChange = {}, isNumeric = false)
+    }
 }

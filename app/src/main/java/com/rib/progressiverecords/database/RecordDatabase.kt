@@ -1,17 +1,19 @@
 package com.rib.progressiverecords.database
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.rib.progressiverecords.model.Exercise
-import com.rib.progressiverecords.model.Record
-import com.rib.progressiverecords.model.Session
+import com.rib.progressiverecords.model.*
 
 @Database(
-    entities = [Session::class, Record::class, Exercise::class],
-    version = 2
+    entities = [Session::class, Record::class, Exercise::class, ExerciseSecMuscleCrossRef::class, Category::class, Muscle::class],
+    version = 3,
+    autoMigrations = [
+        AutoMigration(from = 2, to = 3)
+    ]
 )
 @TypeConverters(RecordTypeConverters::class)
 abstract class RecordDatabase : RoomDatabase() {
