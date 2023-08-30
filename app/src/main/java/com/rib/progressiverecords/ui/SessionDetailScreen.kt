@@ -143,7 +143,7 @@ private fun SessionHeader (
                 onDismissRequest = { dropdownMenuExpanded = false }
             ) {
                 DropdownMenuItem(onClick = { onDeleteSession() }) {
-                    Text("Delete session")
+                    Text(stringResource(R.string.delete_session_button_caption))
                 }
             }
         }

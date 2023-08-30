@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -64,13 +65,15 @@ fun StandardButton (
 
 @Composable
 fun StandardTextField (
+    modifier: Modifier = Modifier,
     entryValue: String,
     onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
     isNumeric: Boolean,
     isEnabled: Boolean = true,
+    readOnly: Boolean = false,
     borderColor: Color = Color.Transparent,
-    textAlign: TextAlign = TextAlign.Center
+    textAlign: TextAlign = TextAlign.Center,
+    trailingIcon: Int = 0
 ) {
     var textFieldState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(text = entryValue))
@@ -88,6 +91,7 @@ fun StandardTextField (
         if (isNumeric) { KeyboardType.Number} else { KeyboardType.Text }),
         singleLine = true,
         enabled = isEnabled,
+        readOnly = readOnly,
         colors = TextFieldDefaults.outlinedTextFieldColors(
             backgroundColor = MaterialTheme.colors.primary,
             textColor = MaterialTheme.colors.onPrimary,
@@ -97,7 +101,16 @@ fun StandardTextField (
             leadingIconColor = MaterialTheme.colors.onPrimary,
         ),
         textStyle = TextStyle(textAlign = textAlign),
-        shape = RoundedCornerShape(4.dp)
+        shape = RoundedCornerShape(4.dp),
+        trailingIcon = {
+            if(trailingIcon != 0) {
+                Icon(
+                    painter = painterResource(id = trailingIcon),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
+                )
+            }
+        }
     )
 }
 

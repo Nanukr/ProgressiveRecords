@@ -79,7 +79,7 @@ fun ExerciseListScreen(
                     viewModel.exerciseBeingModified = null
                     addExerciseToDb(it, viewModel)
                 },
-                onDismissRequest = { /*TODO*/ },
+                onDismissRequest = { exerciseBeingModified = false },
                 isBeingEdited = false
             )
         }
@@ -269,7 +269,7 @@ private fun deleteExercise(
 
 fun createEmptyExercise(): ExerciseWithSecMuscle {
     return ExerciseWithSecMuscle(
-        exercise = Exercise("Example", 0, "Chest", "Barbell", 0),
-        muscles = listOf(Muscle("Shoulders"), Muscle("Triceps"))
+        exercise = Exercise("", 0, "", "", 0),
+        muscles = emptyList()
     )
 }
