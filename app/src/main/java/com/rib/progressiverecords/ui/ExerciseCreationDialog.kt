@@ -2,7 +2,10 @@ package com.rib.progressiverecords.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -19,8 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
+import com.rib.progressiverecords.model.Muscle
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
 import com.rib.progressiverecords.ui.theme.ProgressiveRecordsTheme
+import com.rib.progressiverecords.ui.theme.SingleOptionChoosingDialog
 import com.rib.progressiverecords.ui.theme.StandardTextField
 
 @Composable
@@ -35,19 +40,12 @@ fun ExerciseCreationDialog(
     var choosingCategory by rememberSaveable { mutableStateOf(false) }
     var missingEntriesDialog by rememberSaveable { mutableStateOf(false) }
 
-    var secMuscles = ""
+    val secMusclesString by rememberSaveable { mutableStateOf(turnMuscleListToString(exercise.muscles)) }
 
-    for (muscle in exercise.muscles) {
-        secMuscles += if (muscle.muscleName != exercise.muscles[exercise.muscles.lastIndex].muscleName) {
-            "${muscle.muscleName}, "
-        } else {
-            muscle.muscleName
-        }
-    }
     var exerciseName by rememberSaveable{ mutableStateOf(exercise.exercise.exerciseName) }
 
     var selectedPrimMuscle by rememberSaveable { mutableStateOf(exercise.exercise.primMuscle) }
-    var selectedSecMuscles by rememberSaveable { mutableStateOf(secMuscles) }
+    var selectedSecMuscles by rememberSaveable { mutableStateOf(exercise.muscles) }
 
     var selectedCategory by rememberSaveable { mutableStateOf(exercise.exercise.category) }
     var isAssisted by rememberSaveable { mutableStateOf(false) }
@@ -96,44 +94,14 @@ fun ExerciseCreationDialog(
                 modifier = Modifier
                     .padding(8.dp)
             ) {
-                Row (
-                    modifier = Modifier
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                        ) {
-                    Text (
-                        modifier = Modifier.padding(8.dp),
-                        text = stringResource(R.string.create_exercise_caption),
-                        color = MaterialTheme.colors.onPrimary,
-                        style = MaterialTheme.typography.h6
-                    )
-                }
+                //Header
+                ExerciseCreationHeader()
 
                 //Exercise name
-                Text (
-                    modifier = Modifier.padding(8.dp),
-                    text = stringResource(R.string.upsert_exercise_name_caption),
-                    color = MaterialTheme.colors.onPrimary
+                ExerciseNameEntry(
+                    exerciseName = exerciseName,
+                    onChangeExerciseName = { exerciseName = it }
                 )
-
-                Card (
-                    modifier = Modifier
-                        .padding(8.dp),
-                    backgroundColor = MaterialTheme.colors.primary,
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.secondary)
-                ) {
-                    StandardTextField(
-                        entryValue = exerciseName,
-                        onValueChange = {
-                            exerciseName = it
-                            exercise.exercise.exerciseName = it
-                        },
-                        isNumeric = false,
-                        modifier = Modifier.padding(4.dp),
-                        textAlign = TextAlign.Left
-                    )
-                }
 
                 Spacer(modifier = Modifier.padding(8.dp))
 
@@ -144,131 +112,12 @@ fun ExerciseCreationDialog(
                     color = MaterialTheme.colors.onPrimary
                 )
 
-                Card (
-                    modifier = Modifier
-                        .padding(8.dp),
-                    backgroundColor = MaterialTheme.colors.primary,
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.secondary)
-                ) {
-                    Column {
-                        //Primary muscle
-                        Row (
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .clickable { choosingPrimMuscle = true },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text (
-                                modifier = Modifier.padding(4.dp),
-                                text = stringResource(R.string.upsert_primary_muscle_caption),
-                                color = MaterialTheme.colors.onPrimary
-                            )
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            StandardTextField(
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .clickable { choosingPrimMuscle = true },
-                                entryValue = selectedPrimMuscle,
-                                onValueChange = {},
-                                isNumeric = false,
-                                readOnly = true,
-                                textAlign = TextAlign.Right,
-                                trailingIcon = R.drawable.ic_arrow_down
-                            )
-                            DropdownMenu(
-                                modifier = Modifier.height(500.dp),
-                                expanded = choosingPrimMuscle,
-                                onDismissRequest = { choosingPrimMuscle = false }
-                            ) {
-                                muscles.forEach { muscle ->
-                                    DropdownMenuItem(onClick = {
-                                        selectedPrimMuscle = muscle
-                                        choosingPrimMuscle = false
-                                    } ) {
-                                        Text(muscle)
-                                    }
-                                }
-                            }
-                        }
-
-                        //Secondary muscle
-                        Row (
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .clickable { choosingSecMuscle = true },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text (
-                                modifier = Modifier.padding(4.dp),
-                                text = stringResource(R.string.upsert_secondary_muscles_caption),
-                                color = MaterialTheme.colors.onPrimary
-                            )
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            StandardTextField(
-                                modifier = Modifier
-                                    .padding(4.dp)
-                                    .clickable { choosingSecMuscle = true },
-                                entryValue = selectedSecMuscles,
-                                onValueChange = {},
-                                isNumeric = false,
-                                readOnly = true,
-                                textAlign = TextAlign.Right,
-                                trailingIcon = R.drawable.ic_arrow_down
-                            )
-                            DropdownMenu(
-                                modifier = Modifier.height(500.dp),
-                                expanded = choosingSecMuscle,
-                                onDismissRequest = { choosingSecMuscle = false }
-                            ) {
-                                muscles.forEach { muscle ->
-                                    var isSelected by rememberSaveable { mutableStateOf(muscle in selectedSecMuscles) }
-
-                                    DropdownMenuItem(onClick = {
-                                        if (isSelected) {
-                                            selectedSecMuscles.replace(Regex("$muscle.{2}"), "")
-                                            isSelected = false
-                                        } else {
-                                            selectedSecMuscles += muscle
-                                            isSelected = true
-                                        }
-                                    }) {
-                                        Row (
-                                            verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                            Text(muscle)
-
-                                            Spacer(modifier = Modifier.weight(1f))
-
-                                            RadioButton(
-                                                selected = isSelected,
-                                                onClick = {
-                                                    if (isSelected) {
-                                                        selectedSecMuscles.replace(Regex("$muscle.{2}"), "")
-                                                        isSelected = false
-                                                    } else {
-                                                        selectedSecMuscles += muscle
-                                                        isSelected = true
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                                Divider()
-
-                                DropdownMenuItem(onClick = { choosingSecMuscle = false }) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Text(stringResource(R.string.confirm_button))
-                                }
-                            }
-                        }
-                    }
-                }
+                ExerciseMusclesEntries(
+                    selectedPrimMuscle = selectedPrimMuscle,
+                    secMusclesString = secMusclesString,
+                    onChoosePrimMuscle = { choosingPrimMuscle = true },
+                    onChooseSecMuscles = { choosingSecMuscle = true }
+                )
 
                 Spacer(modifier = Modifier.padding(8.dp))
 
@@ -279,124 +128,391 @@ fun ExerciseCreationDialog(
                     color = MaterialTheme.colors.onPrimary
                 )
 
-                Card (
+                ExerciseOthersEntries(
+                    selectedCategory = selectedCategory,
+                    onChooseCategory = { choosingCategory = true },
+                    isBeingEdited = isBeingEdited,
+                    isAssisted = isAssisted,
+                    changeIsAssisted = { isAssisted = !isAssisted }
+                )
+
+                //Buttons
+                CreateExerciseDialogButtons(
+                    exerciseName = exerciseName,
+                    selectedPrimMuscle = selectedPrimMuscle,
+                    selectedSecMuscles = selectedSecMuscles,
+                    selectedCategory = selectedCategory,
+                    isAssisted = isAssisted,
+                    onMissingEntries = { missingEntriesDialog = true },
+                    addExercise = { addExercise(it) },
+                    onDismissRequest = { onDismissRequest() }
+                )
+            }
+
+            //Dialogs
+            if (choosingPrimMuscle) {
+                SingleOptionChoosingDialog(
+                    options = muscles,
+                    selectedOption = selectedPrimMuscle,
+                    title = R.string.upsert_primary_muscle_long_caption,
+                    changeSelectedOption = { selectedPrimMuscle = it },
+                    onDismissRequest = { choosingPrimMuscle = false }
+                )
+            }
+
+            if (choosingSecMuscle) {
+                ChooseSecMusclesDialog(
+                    muscles = muscles,
+                    selectedSecMuscles = selectedSecMuscles,
+                    addSelectedSecMuscle = { selectedSecMuscles = selectedSecMuscles + it },
+                    removeSelectedSecMuscle = { selectedSecMuscles = selectedSecMuscles - it },
+                    onDismissRequest = { choosingSecMuscle = false }
+                )
+            }
+
+            if (choosingCategory) {
+                SingleOptionChoosingDialog(
+                    options = categories,
+                    selectedOption = selectedCategory,
+                    title = R.string.upsert_primary_muscle_long_caption,
+                    changeSelectedOption = { selectedCategory = it },
+                    onDismissRequest = { choosingCategory = false }
+                )
+            }
+
+            if (missingEntriesDialog) {
+                MissingEntriesDialog (onDismissRequest = { missingEntriesDialog = false })
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExerciseCreationHeader() {
+    Row (
+        modifier = Modifier
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text (
+            modifier = Modifier.padding(8.dp),
+            text = stringResource(R.string.create_exercise_caption),
+            color = MaterialTheme.colors.onPrimary,
+            style = MaterialTheme.typography.h6
+        )
+    }
+}
+
+@Composable
+private fun ExerciseNameEntry(
+    exerciseName: String,
+    onChangeExerciseName: (String) -> Unit
+) {
+    Text (
+        modifier = Modifier.padding(8.dp),
+        text = stringResource(R.string.upsert_exercise_name_caption),
+        color = MaterialTheme.colors.onPrimary
+    )
+
+    Card (
+        modifier = Modifier
+            .padding(8.dp),
+        backgroundColor = MaterialTheme.colors.primary,
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.secondary)
+    ) {
+        StandardTextField(
+            entryValue = exerciseName,
+            onValueChange = {
+                onChangeExerciseName(it)
+            },
+            isNumeric = false,
+            modifier = Modifier.padding(4.dp),
+            textAlign = TextAlign.Left
+        )
+    }
+}
+
+@Composable
+private fun ExerciseMusclesEntries(
+    selectedPrimMuscle: String,
+    secMusclesString: String,
+    onChoosePrimMuscle: () -> Unit,
+    onChooseSecMuscles: () -> Unit,
+) {
+    Card (
+        modifier = Modifier
+            .padding(8.dp),
+        backgroundColor = MaterialTheme.colors.primary,
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.secondary)
+    ) {
+        Column {
+            //Primary muscle
+            Row (
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .clickable { onChoosePrimMuscle() },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text (
+                    modifier = Modifier.padding(4.dp),
+                    text = stringResource(R.string.upsert_primary_muscle_short_caption),
+                    color = MaterialTheme.colors.onPrimary
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                StandardTextField(
                     modifier = Modifier
-                        .padding(8.dp),
-                    backgroundColor = MaterialTheme.colors.primary,
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.secondary)
+                        .padding(4.dp),
+                    entryValue = selectedPrimMuscle,
+                    onValueChange = {},
+                    isNumeric = false,
+                    isEnabled = false,
+                    textAlign = TextAlign.Right,
+                    trailingIcon = R.drawable.ic_arrow_down
+                )
+            }
+
+            //Secondary muscle
+            Row (
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .clickable { onChooseSecMuscles() },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text (
+                    modifier = Modifier.padding(4.dp),
+                    text = stringResource(R.string.upsert_secondary_muscles_short_caption),
+                    color = MaterialTheme.colors.onPrimary
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                StandardTextField(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .clickable { onChooseSecMuscles() },
+                    entryValue = secMusclesString,
+                    onValueChange = {},
+                    isNumeric = false,
+                    isEnabled = false,
+                    textAlign = TextAlign.Right,
+                    trailingIcon = R.drawable.ic_arrow_down
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExerciseOthersEntries(
+    selectedCategory: String,
+    onChooseCategory: () -> Unit,
+    isBeingEdited: Boolean,
+    isAssisted: Boolean,
+    changeIsAssisted: () -> Unit
+) {
+    Card (
+        modifier = Modifier
+            .padding(8.dp),
+        backgroundColor = MaterialTheme.colors.primary,
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colors.secondary)
+    ) {
+        Column {
+            //Category
+            Row (
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .clickable { onChooseCategory() },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text (
+                    modifier = Modifier.padding(4.dp),
+                    text = stringResource(R.string.upsert_category_caption),
+                    color = MaterialTheme.colors.onPrimary
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                StandardTextField(
+                    modifier = Modifier
+                        .padding(4.dp),
+                    entryValue = selectedCategory,
+                    onValueChange = {},
+                    isNumeric = false,
+                    isEnabled = false,
+                    textAlign = TextAlign.Right,
+                    trailingIcon = R.drawable.ic_arrow_down
+                )
+            }
+
+            //Is assisted
+            Row (
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text (
+                    modifier = Modifier.padding(4.dp),
+                    text = stringResource(R.string.upsert_assisted_caption),
+                    color = MaterialTheme.colors.onPrimary
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                RadioButton(
+                    enabled = !isBeingEdited,
+                    selected = isAssisted,
+                    onClick = { changeIsAssisted() }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CreateExerciseDialogButtons(
+    exerciseName: String,
+    selectedPrimMuscle: String,
+    selectedSecMuscles: List<Muscle>,
+    selectedCategory: String,
+    isAssisted: Boolean,
+    onMissingEntries: () -> Unit,
+    addExercise: (ExerciseWithSecMuscle) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    val newExercise = Exercise(
+        exerciseName = exerciseName,
+        primMuscle = selectedPrimMuscle,
+        category = selectedCategory,
+        isAssisted = if (isAssisted) { 1 } else { 0 }
+    )
+
+    Row (
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        //Cancel button
+        TextButton (onClick = { onDismissRequest() }) {
+            Text (
+                text = stringResource(R.string.cancel_button),
+                color = MaterialTheme.colors.secondary
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        //Confirm button
+        TextButton (onClick = {
+            if (checkExerciseEntries(newExercise)) {
+                onMissingEntries()
+            } else {
+                addExercise(
+                    ExerciseWithSecMuscle(
+                        exercise = newExercise,
+                        muscles = selectedSecMuscles
+                    )
+                )
+            }
+        }) {
+            Text (
+                text = stringResource(R.string.confirm_button),
+                color = MaterialTheme.colors.secondary
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChooseSecMusclesDialog(
+    muscles: List<String>,
+    selectedSecMuscles: List<Muscle>,
+    addSelectedSecMuscle: (Muscle) -> Unit,
+    removeSelectedSecMuscle: (Muscle) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    Dialog (onDismissRequest = { onDismissRequest() }) {
+        Card (
+            modifier = Modifier
+                .size(width = 250.dp, height = 600.dp),
+            backgroundColor = MaterialTheme.colors.primary,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column (
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Text (
+                    modifier = Modifier.padding(8.dp),
+                    text = stringResource(R.string.upsert_secondary_muscles_long_caption),
+                    color = MaterialTheme.colors.onPrimary,
+                    style = MaterialTheme.typography.h6
+                )
+
+                Divider()
+
+                Column (
+                    modifier = Modifier
+                        .height(490.dp)
                 ) {
-                    Column {
-                        //Category
-                        Row (
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .clickable { choosingCategory = true },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text (
-                                modifier = Modifier.padding(4.dp),
-                                text = stringResource(R.string.upsert_category_caption),
-                                color = MaterialTheme.colors.onPrimary
-                            )
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            StandardTextField(
+                    LazyColumn {
+                        items(muscles) { muscle ->
+                            val isSelected = selectedSecMuscles.contains(Muscle(muscle))
+                            Row (
                                 modifier = Modifier
-                                    .padding(4.dp)
-                                    .clickable { choosingCategory = true },
-                                entryValue = selectedCategory,
-                                onValueChange = {},
-                                isNumeric = false,
-                                readOnly = true,
-                                textAlign = TextAlign.Right,
-                                trailingIcon = R.drawable.ic_arrow_down
-                            )
-                            DropdownMenu(
-                                modifier = Modifier.height(500.dp),
-                                expanded = choosingCategory,
-                                onDismissRequest = { choosingCategory = false }
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = (isSelected),
+                                        onClick = {
+                                            if (isSelected) {
+                                                removeSelectedSecMuscle(Muscle(muscle))
+                                            } else {
+                                                addSelectedSecMuscle(Muscle(muscle))
+                                            }
+                                        }
+                                    )
+                                    .padding(horizontal = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                categories.forEach { currentCat ->
-                                    DropdownMenuItem(onClick = {
-                                        selectedCategory = currentCat
-                                        choosingCategory = false
-                                    } ) {
-                                        Text(currentCat)
+                                RadioButton(
+                                    selected = (isSelected),
+                                    onClick = {
+                                        if (isSelected) {
+                                            removeSelectedSecMuscle(Muscle(muscle))
+                                        } else {
+                                            addSelectedSecMuscle(Muscle(muscle))
+                                        }
                                     }
-                                }
+                                )
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                Text(
+                                    text = muscle,
+                                    color = MaterialTheme.colors.onPrimary
+                                )
                             }
-                        }
-
-                        //Is assisted
-                        Row (
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text (
-                                modifier = Modifier.padding(4.dp),
-                                text = stringResource(R.string.upsert_assisted_caption),
-                                color = MaterialTheme.colors.onPrimary
-                            )
-
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            RadioButton(
-                                enabled = !isBeingEdited,
-                                selected = isAssisted,
-                                onClick = { isAssisted = !isAssisted}
-                            )
                         }
                     }
                 }
 
-                //Buttons
-                Row (
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    TextButton (onClick = { onDismissRequest() }) {
-                        Text (
-                            text = stringResource(R.string.cancel_button),
-                            color = MaterialTheme.colors.secondary
-                        )
-                    }
+                Divider()
 
+                Row {
                     Spacer(modifier = Modifier.weight(1f))
 
-                    TextButton (onClick = {
-                        if (checkExerciseEntries(exercise.exercise)) {
-                            missingEntriesDialog = true
-                        } else {
-                            addExercise(
-                                ExerciseWithSecMuscle(
-                                    exercise = Exercise(
-                                        exerciseName = exerciseName,
-                                        isDefault = 0,
-                                        primMuscle = selectedPrimMuscle,
-                                        category = selectedCategory,
-                                        isAssisted = if (isAssisted) { 1 } else { 0 }
-                                    ),
-                                    muscles = /*TODO*/
-                                )
-                            )
-                        }
-                    }) {
-                        Text (
+                    TextButton(onClick = { onDismissRequest() }) {
+                        Text(
                             text = stringResource(R.string.confirm_button),
                             color = MaterialTheme.colors.secondary
                         )
                     }
                 }
-            }
-
-            //Dialogs
-            if(missingEntriesDialog) {
-                MissingEntriesDialog (onDismissRequest = { missingEntriesDialog = false })
             }
         }
     }
@@ -419,7 +535,7 @@ private fun MissingEntriesDialog(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = stringResource(R.string.confirm_exercise_deletion_message),
+                    text = stringResource(R.string.missing_entries_dialog_message),
                     color = MaterialTheme.colors.onPrimary,
                     textAlign = TextAlign.Center
                 )
@@ -437,6 +553,20 @@ private fun MissingEntriesDialog(
 
 private fun checkExerciseEntries(exercise: Exercise): Boolean {
     return (exercise.exerciseName == "" || exercise.primMuscle == "" || exercise.category == "")
+}
+
+private fun turnMuscleListToString(muscles: List<Muscle>): String {
+    var muscleString = ""
+
+    for (muscle in muscles) {
+        muscleString += if (muscle.muscleName != muscles[muscles.lastIndex].muscleName) {
+            "${muscle.muscleName}, "
+        } else {
+            muscle.muscleName
+        }
+    }
+
+    return muscleString
 }
 
 @Preview

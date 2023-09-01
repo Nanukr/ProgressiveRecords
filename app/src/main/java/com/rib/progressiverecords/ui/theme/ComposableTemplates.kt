@@ -2,6 +2,9 @@ package com.rib.progressiverecords.ui.theme
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -10,15 +13,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.rib.progressiverecords.R
 
 @Composable
 fun StandardOutlinedButton (
@@ -98,6 +105,9 @@ fun StandardTextField (
             cursorColor = MaterialTheme.colors.onPrimary,
             focusedBorderColor = borderColor,
             unfocusedBorderColor = borderColor,
+            disabledBorderColor = if (isEnabled) {
+                MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled)
+            } else { borderColor },
             leadingIconColor = MaterialTheme.colors.onPrimary,
         ),
         textStyle = TextStyle(textAlign = textAlign),
@@ -112,6 +122,83 @@ fun StandardTextField (
             }
         }
     )
+}
+
+@Composable
+fun SingleOptionChoosingDialog(
+    options: List<String>,
+    selectedOption: String,
+    title: Int,
+    changeSelectedOption: (String) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    Dialog (onDismissRequest = { onDismissRequest() }) {
+        Card (
+            modifier = Modifier
+                .size(width = 250.dp, height = 600.dp),
+            backgroundColor = MaterialTheme.colors.primary,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column (
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Text (
+                    modifier = Modifier.padding(8.dp),
+                    text = stringResource(title),
+                    color = MaterialTheme.colors.onPrimary,
+                    style = MaterialTheme.typography.h6
+                )
+
+                Divider()
+
+                Column (
+                    modifier = Modifier
+                        .height(490.dp)
+                ) {
+                    LazyColumn {
+                        items(options) { option ->
+                            Row (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = (selectedOption == option),
+                                        onClick = { changeSelectedOption(option) }
+                                    )
+                                    .padding(horizontal = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = (selectedOption == option),
+                                    onClick = { changeSelectedOption(option) }
+                                )
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                Text(
+                                    text = option,
+                                    color = MaterialTheme.colors.onPrimary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Divider()
+
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    TextButton(onClick = { onDismissRequest() }) {
+                        Text(
+                            text = stringResource(R.string.confirm_button),
+                            color = MaterialTheme.colors.secondary
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

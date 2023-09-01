@@ -1,7 +1,6 @@
 package com.rib.progressiverecords.ui
 
 import android.text.format.DateFormat
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,15 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseSetsList
 import com.rib.progressiverecords.R
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
-import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.SessionWithRecords
-import kotlinx.coroutines.launch
 
 @Composable
 fun SessionListScreen(

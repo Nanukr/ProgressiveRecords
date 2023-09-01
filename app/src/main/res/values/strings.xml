@@ -40,10 +40,12 @@
     <string name="upsert_exercise_name_caption">Name</string>
     <string name="enter_exercise_name_placeholder">Enter name</string>
     <string name="upsert_target_muscles_caption">Target muscles</string>
-    <string name="upsert_primary_muscle_caption">Primary</string>
-    <string name="upsert_secondary_muscles_caption">Secondary</string>
-    <string name="upsert_other_options_caption">Other options</string>
+    <string name="upsert_primary_muscle_short_caption">Primary</string>
+    <string name="upsert_secondary_muscles_short_caption">Secondary</string>
+    <string name="upsert_primary_muscle_long_caption">Primary muscle</string>
+    <string name="upsert_secondary_muscles_long_caption">Secondary muscles</string>
     <string name="upsert_category_caption">Category</string>
+    <string name="upsert_other_options_caption">Other options</string>
     <string name="upsert_assisted_caption">Is assisted</string>
     <string name="create_exercise_caption">Create exercise</string>
     <string name="missing_entries_dialog_message">There are missing entries</string>

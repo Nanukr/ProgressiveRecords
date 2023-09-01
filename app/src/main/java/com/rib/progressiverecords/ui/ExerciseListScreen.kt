@@ -29,10 +29,7 @@ import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
-import com.rib.progressiverecords.model.Muscle
-import com.rib.progressiverecords.model.relations.ExerciseWithRecords
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
-import com.rib.progressiverecords.ui.theme.StandardTextField
 import kotlinx.coroutines.launch
 
 @Composable

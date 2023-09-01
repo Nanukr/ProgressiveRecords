@@ -22,7 +22,6 @@ class ExerciseViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-
             recordRepository.getExercises().collect {
                 _exercises.value = it
             }
