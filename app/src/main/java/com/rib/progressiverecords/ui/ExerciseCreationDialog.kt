@@ -15,8 +15,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -40,12 +43,12 @@ fun ExerciseCreationDialog(
     var choosingCategory by rememberSaveable { mutableStateOf(false) }
     var missingEntriesDialog by rememberSaveable { mutableStateOf(false) }
 
-    val secMusclesString by rememberSaveable { mutableStateOf(turnMuscleListToString(exercise.muscles)) }
-
     var exerciseName by rememberSaveable{ mutableStateOf(exercise.exercise.exerciseName) }
 
     var selectedPrimMuscle by rememberSaveable { mutableStateOf(exercise.exercise.primMuscle) }
     var selectedSecMuscles by rememberSaveable { mutableStateOf(exercise.muscles) }
+
+    var secMusclesString by rememberSaveable { mutableStateOf(turnMuscleListToString(selectedSecMuscles)) }
 
     var selectedCategory by rememberSaveable { mutableStateOf(exercise.exercise.category) }
     var isAssisted by rememberSaveable { mutableStateOf(false) }
@@ -164,8 +167,14 @@ fun ExerciseCreationDialog(
                 ChooseSecMusclesDialog(
                     muscles = muscles,
                     selectedSecMuscles = selectedSecMuscles,
-                    addSelectedSecMuscle = { selectedSecMuscles = selectedSecMuscles + it },
-                    removeSelectedSecMuscle = { selectedSecMuscles = selectedSecMuscles - it },
+                    addSelectedSecMuscle = {
+                        selectedSecMuscles = selectedSecMuscles + it
+                        secMusclesString = turnMuscleListToString(selectedSecMuscles)
+                    },
+                    removeSelectedSecMuscle = {
+                        selectedSecMuscles = selectedSecMuscles - it
+                        secMusclesString = turnMuscleListToString(selectedSecMuscles)
+                    },
                     onDismissRequest = { choosingSecMuscle = false }
                 )
             }
@@ -263,15 +272,16 @@ private fun ExerciseMusclesEntries(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                StandardTextField(
-                    modifier = Modifier
-                        .padding(4.dp),
-                    entryValue = selectedPrimMuscle,
-                    onValueChange = {},
-                    isNumeric = false,
-                    isEnabled = false,
-                    textAlign = TextAlign.Right,
-                    trailingIcon = R.drawable.ic_arrow_down
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = selectedPrimMuscle,
+                    color = Color.Gray
+                )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_down),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
                 )
             }
 
@@ -290,16 +300,18 @@ private fun ExerciseMusclesEntries(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                StandardTextField(
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .clickable { onChooseSecMuscles() },
-                    entryValue = secMusclesString,
-                    onValueChange = {},
-                    isNumeric = false,
-                    isEnabled = false,
-                    textAlign = TextAlign.Right,
-                    trailingIcon = R.drawable.ic_arrow_down
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = secMusclesString,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_down),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
                 )
             }
         }
@@ -337,15 +349,16 @@ private fun ExerciseOthersEntries(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                StandardTextField(
-                    modifier = Modifier
-                        .padding(4.dp),
-                    entryValue = selectedCategory,
-                    onValueChange = {},
-                    isNumeric = false,
-                    isEnabled = false,
-                    textAlign = TextAlign.Right,
-                    trailingIcon = R.drawable.ic_arrow_down
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = selectedCategory,
+                    color = Color.Gray
+                )
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_down),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
                 )
             }
 
@@ -388,7 +401,8 @@ private fun CreateExerciseDialogButtons(
         exerciseName = exerciseName,
         primMuscle = selectedPrimMuscle,
         category = selectedCategory,
-        isAssisted = if (isAssisted) { 1 } else { 0 }
+        isAssisted = if (isAssisted) { 1 } else { 0 },
+        isDefault = 0
     )
 
     Row (
