@@ -650,9 +650,10 @@ private fun createNewRecord(
     sessionPosition: Int,
     category: String
 ): Record {
-    val reps = if (category != "duration") { 0 } else { null }
-    val weight = if (category != "repsOnly" && category != "duration") { 0f } else { null }
-    val duration = if (category == "duration") { TimeLength(0, 0, 0) } else { null }
+    val reps = if (category != "Duration" && category != "Cardio") { 0 } else { null }
+    val weight = if (category != "Reps Only" && category != "Duration" && category != "Cardio") { 0f } else { null }
+    val duration = if (category == "Duration" || category == "Cardio") { TimeLength(0, 0, 0) } else { null }
+    val distance = if (category == "Cardio") { 0.0f } else { null }
 
     return Record(
         id = UUID.randomUUID(),
@@ -662,7 +663,8 @@ private fun createNewRecord(
         setNumber = previousSet + 1,
         repetitions = reps,
         weight = weight,
-        exerciseDuration = duration
+        exerciseDuration = duration,
+        distance = distance
     )
 }
 

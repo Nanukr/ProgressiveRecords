@@ -170,22 +170,24 @@ private fun ExerciseItem(
             color = MaterialTheme.colors.onBackground
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        if (exercise.exercise.isDefault == 0) {
+            Spacer(modifier = Modifier.weight(1f))
 
-        IconButton(onClick = { onEdit(exercise) }) {
-            Icon(
-                Icons.Filled.Edit,
-                contentDescription = stringResource(R.string.edit_exercise_icon_description),
-                tint = MaterialTheme.colors.onBackground
-            )
-        }
+            IconButton(onClick = { onEdit(exercise) }) {
+                Icon(
+                    Icons.Filled.Edit,
+                    contentDescription = stringResource(R.string.edit_exercise_icon_description),
+                    tint = MaterialTheme.colors.onBackground
+                )
+            }
 
-        IconButton(onClick = { onDelete(exercise) }) {
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = stringResource(R.string.delete_exercise_icon_description),
-                tint = MaterialTheme.colors.onBackground
-            )
+            IconButton(onClick = { onDelete(exercise) }) {
+                Icon(
+                    Icons.Filled.Delete,
+                    contentDescription = stringResource(R.string.delete_exercise_icon_description),
+                    tint = MaterialTheme.colors.onBackground
+                )
+            }
         }
     }
 }
@@ -266,7 +268,7 @@ private fun deleteExercise(
 
 fun createEmptyExercise(): ExerciseWithSecMuscle {
     return ExerciseWithSecMuscle(
-        exercise = Exercise("", 0, "", "", 0),
+        exercise = Exercise("", 0, "", ""),
         muscles = emptyList()
     )
 }

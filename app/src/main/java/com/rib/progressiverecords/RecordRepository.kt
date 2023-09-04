@@ -4,16 +4,15 @@ import android.content.Context
 import androidx.room.Room
 import com.rib.progressiverecords.database.RecordDatabase
 import com.rib.progressiverecords.database.migration_1_2
+import com.rib.progressiverecords.database.migration_3_4
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
-import com.rib.progressiverecords.model.relations.ExerciseWithRecords
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.util.*
@@ -30,7 +29,8 @@ class RecordRepository private constructor(
         RecordDatabase::class.java,
         DATABASE_NAME
     )
-    .addMigrations(migration_1_2)
+    .addMigrations(migration_1_2, migration_3_4)
+    .createFromAsset("$DATABASE_NAME.db")
     .build()
 
     suspend fun addSession(session: Session) {

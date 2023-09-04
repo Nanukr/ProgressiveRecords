@@ -51,7 +51,6 @@ fun ExerciseCreationDialog(
     var secMusclesString by rememberSaveable { mutableStateOf(turnMuscleListToString(selectedSecMuscles)) }
 
     var selectedCategory by rememberSaveable { mutableStateOf(exercise.exercise.category) }
-    var isAssisted by rememberSaveable { mutableStateOf(false) }
 
     val muscles = listOf(
         stringResource(R.string.muscle_name_chest),
@@ -133,10 +132,7 @@ fun ExerciseCreationDialog(
 
                 ExerciseOthersEntries(
                     selectedCategory = selectedCategory,
-                    onChooseCategory = { choosingCategory = true },
-                    isBeingEdited = isBeingEdited,
-                    isAssisted = isAssisted,
-                    changeIsAssisted = { isAssisted = !isAssisted }
+                    onChooseCategory = { choosingCategory = true }
                 )
 
                 //Buttons
@@ -145,7 +141,6 @@ fun ExerciseCreationDialog(
                     selectedPrimMuscle = selectedPrimMuscle,
                     selectedSecMuscles = selectedSecMuscles,
                     selectedCategory = selectedCategory,
-                    isAssisted = isAssisted,
                     onMissingEntries = { missingEntriesDialog = true },
                     addExercise = { addExercise(it) },
                     onDismissRequest = { onDismissRequest() }
@@ -321,10 +316,7 @@ private fun ExerciseMusclesEntries(
 @Composable
 private fun ExerciseOthersEntries(
     selectedCategory: String,
-    onChooseCategory: () -> Unit,
-    isBeingEdited: Boolean,
-    isAssisted: Boolean,
-    changeIsAssisted: () -> Unit
+    onChooseCategory: () -> Unit
 ) {
     Card (
         modifier = Modifier
@@ -361,27 +353,6 @@ private fun ExerciseOthersEntries(
                     tint = MaterialTheme.colors.onPrimary
                 )
             }
-
-            //Is assisted
-            Row (
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text (
-                    modifier = Modifier.padding(4.dp),
-                    text = stringResource(R.string.upsert_assisted_caption),
-                    color = MaterialTheme.colors.onPrimary
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                RadioButton(
-                    enabled = !isBeingEdited,
-                    selected = isAssisted,
-                    onClick = { changeIsAssisted() }
-                )
-            }
         }
     }
 }
@@ -392,7 +363,6 @@ private fun CreateExerciseDialogButtons(
     selectedPrimMuscle: String,
     selectedSecMuscles: List<Muscle>,
     selectedCategory: String,
-    isAssisted: Boolean,
     onMissingEntries: () -> Unit,
     addExercise: (ExerciseWithSecMuscle) -> Unit,
     onDismissRequest: () -> Unit
@@ -401,7 +371,6 @@ private fun CreateExerciseDialogButtons(
         exerciseName = exerciseName,
         primMuscle = selectedPrimMuscle,
         category = selectedCategory,
-        isAssisted = if (isAssisted) { 1 } else { 0 },
         isDefault = 0
     )
 

@@ -16,8 +16,5 @@ data class Exercise(
     val primMuscle: String,
 
     @ColumnInfo(name = "category", defaultValue = "")
-    val category: String,
-
-    @ColumnInfo(name = "isAssisted", defaultValue = "0")
-    val isAssisted: Int
+    val category: String
 )
