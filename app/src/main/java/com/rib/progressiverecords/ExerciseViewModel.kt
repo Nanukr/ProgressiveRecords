@@ -1,22 +1,33 @@
 package com.rib.progressiverecords
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
 import com.rib.progressiverecords.model.relations.SessionWithRecords
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class ExerciseViewModel : ViewModel() {
     private val recordRepository = RecordRepository.get()
 
+    private val _sortParams = MutableStateFlow(ExerciseSortParams(searchText = "", muscles = emptyList(), categories = emptyList()))
+    val sortParams = _sortParams.asStateFlow()
+
     private val _exercises: MutableStateFlow<List<ExerciseWithSecMuscle>> = MutableStateFlow(emptyList())
-    val exercises: StateFlow<List<ExerciseWithSecMuscle>>
-        get() = _exercises.asStateFlow()
+    val exercises = _sortParams
+        .combine(_exercises) { sortParams, exercises ->
+            exercises.filter {
+                matchesFilters(exercise = it.exercise, filters = sortParams)
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            _exercises.value
+        )
 
     var exerciseBeingModified: ExerciseWithSecMuscle? = null
 
@@ -26,6 +37,46 @@ class ExerciseViewModel : ViewModel() {
                 _exercises.value = it
             }
         }
+    }
+
+    fun onChangeSearchText(searchText: String) {
+        _sortParams.value = _sortParams.value.copy(searchText = searchText)
+    }
+
+    fun onChangeFilterMuscles(muscles: List<String>) {
+        _sortParams.value = _sortParams.value.copy(muscles = muscles)
+    }
+
+    fun onChangeFilterCategories(categories: List<String>) {
+        _sortParams.value = _sortParams.value.copy(categories = categories)
+    }
+
+    private fun matchesFilters(exercise: Exercise, filters: ExerciseSortParams): Boolean {
+        val matchesSearch: Boolean = if(filters.searchText.isBlank()) {
+            true
+        } else {
+            filters.searchText.lowercase() in exercise.exerciseName.lowercase()
+        }
+
+        val matchesMuscles: Boolean = if (filters.muscles.isEmpty()) {
+            true
+        } else {
+            filters.muscles.contains(exercise.primMuscle)
+        }
+
+        val matchesCategories: Boolean = if (filters.muscles.isEmpty()) {
+            true
+        } else {
+            filters.muscles.contains(exercise.primMuscle)
+        }
+
+        if (matchesSearch && matchesMuscles && matchesCategories) {
+            Log.d("Exercise", "It matches!: ${exercise.exerciseName}")
+        } else {
+            Log.d("Exercise", "Doesn't match!: ${exercise.exerciseName}")
+        }
+
+        return matchesSearch && matchesMuscles && matchesCategories
     }
 
     suspend fun addExercise(exercise: Exercise) {

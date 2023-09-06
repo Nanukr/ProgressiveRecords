@@ -3,7 +3,6 @@
 
     //Session list
     <string name="empty_session_list_message">No recorded sessions</string>
-    <string name="empty_exercise_list_message">No exercises registered</string>
     <string name="create_session_icon_description">Create session</string>
 
     //Session creation
@@ -30,6 +29,7 @@
     <string name="delete_session_dialog_bottom_message">This action cannot be undone</string>
 
     //Exercise list
+    <string name="empty_exercise_list_message">No exercises found</string>
     <string name="edit_exercise_icon_description">Edit exercise</string>
     <string name="delete_exercise_icon_description">Delete exercise</string>
     <string name="confirm_exercise_deletion_message">Are you sure you want to delete the following exercise: %s ? \n\n This will not delete any records containing this exercise</string>

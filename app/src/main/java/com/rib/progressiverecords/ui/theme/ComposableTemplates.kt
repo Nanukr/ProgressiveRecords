@@ -1,11 +1,14 @@
 package com.rib.progressiverecords.ui.theme
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -15,6 +18,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusState
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -202,6 +208,45 @@ fun SingleOptionChoosingDialog(
 }
 
 @Composable
+fun SearchBar(
+    modifier: Modifier = Modifier,
+    hint: String = "Search...",
+    onSearch: (String) -> Unit
+) {
+    var text by rememberSaveable { mutableStateOf("") }
+    var isHintDisplayed by rememberSaveable { mutableStateOf(hint != "") }
+
+    Box (modifier = modifier) {
+        BasicTextField(
+            value = text,
+            onValueChange = {
+                text = it
+                onSearch(it)
+            },
+            maxLines = 1,
+            singleLine = true,
+            textStyle = TextStyle(color = MaterialTheme.colors.onPrimary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(5.dp, CircleShape)
+                .background(MaterialTheme.colors.primary)
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .onFocusChanged {
+                    isHintDisplayed = !it.isFocused
+                }
+        )
+
+        if (isHintDisplayed) {
+            Text(
+                text = hint,
+                color = Color.LightGray,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+            )
+        }
+    }
+}
+
+@Composable
 @Preview
 private fun StandardOutlinedButtonPreview() {
     ProgressiveRecordsTheme {
@@ -222,5 +267,13 @@ private fun StandardButtonPreview() {
 private fun StandardTextFieldPreview() {
     ProgressiveRecordsTheme {
         StandardTextField(entryValue = "Example", onValueChange = {}, isNumeric = false)
+    }
+}
+
+@Composable
+@Preview
+private fun SearchBarPreview() {
+    ProgressiveRecordsTheme {
+        SearchBar(onSearch = {})
     }
 }

@@ -30,6 +30,7 @@ import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
+import com.rib.progressiverecords.ui.theme.SearchBar
 import kotlinx.coroutines.launch
 
 @Composable
@@ -109,38 +110,52 @@ fun ExerciseList(
 ) {
     val exercises = viewModel.exercises.collectAsState(initial = emptyList())
 
-    if (exercises.value.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.empty_exercise_list_message),
-                color = MaterialTheme.colors.onBackground
+    LazyColumn(
+        modifier = Modifier
+            .padding(16.dp)
+            .background(color = MaterialTheme.colors.background)
+    ) {
+        item {
+            ExerciseListHeader(viewModel = viewModel)
+        }
+
+        items(exercises.value) {exercise ->
+            ExerciseItem(
+                exercise = exercise,
+                onSelect = { onSelectItem(it) },
+                onEdit = { onEditItem(it) },
+                onDelete = { onDelete(it) },
+                isBeingSelected = isBeingSelected
             )
         }
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .padding(16.dp)
-                .background(color = MaterialTheme.colors.background)
-        ) {
-            items(exercises.value) {exercise ->
-                ExerciseItem(
-                    exercise = exercise,
-                    onSelect = { onSelectItem(it) },
-                    onEdit = { onEditItem(it) },
-                    onDelete = { onDelete(it) },
-                    isBeingSelected = isBeingSelected
+
+        if (exercises.value.isEmpty()) {
+            item {
+                Text(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    text = stringResource(R.string.empty_exercise_list_message),
+                    color = MaterialTheme.colors.onBackground,
+                    style = MaterialTheme.typography.body1,
+                    textAlign = TextAlign.Center
                 )
             }
-
-            item {
-                Spacer(modifier = Modifier.height(56.dp))
-            }
         }
+
+        item {
+            Spacer(modifier = Modifier.height(56.dp))
+        }
+    }
+}
+
+@Composable
+private fun ExerciseListHeader(
+    viewModel: ExerciseViewModel
+) {
+    Row (
+        modifier = Modifier.padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SearchBar(hint = "Search exercise...",onSearch = { viewModel.onChangeSearchText(it) })
     }
 }
 
