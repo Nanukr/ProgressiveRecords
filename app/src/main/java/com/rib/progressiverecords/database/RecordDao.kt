@@ -31,9 +31,6 @@ interface RecordDao {
     @Delete
     suspend fun deleteExercise(exercise: Exercise)
 
-    @Query("SELECT category FROM exercise WHERE exerciseName = :exerciseName")
-    fun getCategoryWithExerciseName(exerciseName: String): String
-
     @Transaction
     @Query("DELETE FROM record WHERE sessionId = :sessionId")
     suspend fun deleteRecordsInSession(sessionId: UUID)

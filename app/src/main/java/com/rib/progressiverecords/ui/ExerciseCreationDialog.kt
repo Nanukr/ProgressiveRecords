@@ -1,11 +1,9 @@
 package com.rib.progressiverecords.ui
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -27,6 +25,7 @@ import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Muscle
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
+import com.rib.progressiverecords.ui.theme.MultipleOptionsChoosingDialog
 import com.rib.progressiverecords.ui.theme.ProgressiveRecordsTheme
 import com.rib.progressiverecords.ui.theme.SingleOptionChoosingDialog
 import com.rib.progressiverecords.ui.theme.StandardTextField
@@ -35,8 +34,7 @@ import com.rib.progressiverecords.ui.theme.StandardTextField
 fun ExerciseCreationDialog(
     exercise: ExerciseWithSecMuscle,
     addExercise: (ExerciseWithSecMuscle) -> Unit,
-    onDismissRequest: () -> Unit,
-    isBeingEdited: Boolean
+    onDismissRequest: () -> Unit
 ) {
     var choosingPrimMuscle by rememberSaveable { mutableStateOf(false) }
     var choosingSecMuscle by rememberSaveable { mutableStateOf(false) }
@@ -46,9 +44,9 @@ fun ExerciseCreationDialog(
     var exerciseName by rememberSaveable{ mutableStateOf(exercise.exercise.exerciseName) }
 
     var selectedPrimMuscle by rememberSaveable { mutableStateOf(exercise.exercise.primMuscle) }
-    var selectedSecMuscles by rememberSaveable { mutableStateOf(exercise.muscles) }
+    var selectedSecMuscles by rememberSaveable { mutableStateOf(turnMuscleListToStringList(exercise.muscles)) }
 
-    var secMusclesString by rememberSaveable { mutableStateOf(turnMuscleListToString(selectedSecMuscles)) }
+    var secMusclesString by rememberSaveable { mutableStateOf(turnStringListToString(selectedSecMuscles)) }
 
     var selectedCategory by rememberSaveable { mutableStateOf(exercise.exercise.category) }
 
@@ -64,19 +62,20 @@ fun ExerciseCreationDialog(
         stringResource(R.string.muscle_name_upper_back),
         stringResource(R.string.muscle_name_lower_back),
         stringResource(R.string.muscle_name_quads),
+        stringResource(R.string.muscle_name_glutes),
         stringResource(R.string.muscle_name_hamstrings),
         stringResource(R.string.muscle_name_calves),
         stringResource(R.string.muscle_name_adductors),
         stringResource(R.string.muscle_name_abductors),
         stringResource(R.string.muscle_name_full_body),
         stringResource(R.string.muscle_name_olympic),
-        stringResource(R.string.muscle_category_name_other),
     )
 
     val categories = listOf(
         stringResource(R.string.category_name_dumbbells),
         stringResource(R.string.category_name_barbell),
-        stringResource(R.string.category_name_bodyweight),
+        stringResource(R.string.category_name_weighted_bodyweight),
+        stringResource(R.string.category_name_assisted_bodyweight),
         stringResource(R.string.category_name_resistance_bands),
         stringResource(R.string.category_name_kettlebells),
         stringResource(R.string.category_name_trap_bar),
@@ -84,7 +83,9 @@ fun ExerciseCreationDialog(
         stringResource(R.string.category_name_machine),
         stringResource(R.string.category_name_cable),
         stringResource(R.string.category_name_cardio),
-        stringResource(R.string.muscle_category_name_other),
+        stringResource(R.string.category_name_duration),
+        stringResource(R.string.category_name_reps_only),
+        stringResource(R.string.category_name_other),
     )
 
     Dialog( onDismissRequest = { onDismissRequest() } ) {
@@ -159,16 +160,17 @@ fun ExerciseCreationDialog(
             }
 
             if (choosingSecMuscle) {
-                ChooseSecMusclesDialog(
-                    muscles = muscles,
-                    selectedSecMuscles = selectedSecMuscles,
-                    addSelectedSecMuscle = {
+                MultipleOptionsChoosingDialog(
+                    title = R.string.upsert_secondary_muscles_long_caption,
+                    options = muscles,
+                    selectedOptions = selectedSecMuscles,
+                    addSelectedOption = {
                         selectedSecMuscles = selectedSecMuscles + it
-                        secMusclesString = turnMuscleListToString(selectedSecMuscles)
+                        secMusclesString = turnStringListToString(selectedSecMuscles)
                     },
-                    removeSelectedSecMuscle = {
+                    removeSelectedOption = {
                         selectedSecMuscles = selectedSecMuscles - it
-                        secMusclesString = turnMuscleListToString(selectedSecMuscles)
+                        secMusclesString = turnStringListToString(selectedSecMuscles)
                     },
                     onDismissRequest = { choosingSecMuscle = false }
                 )
@@ -361,7 +363,7 @@ private fun ExerciseOthersEntries(
 private fun CreateExerciseDialogButtons(
     exerciseName: String,
     selectedPrimMuscle: String,
-    selectedSecMuscles: List<Muscle>,
+    selectedSecMuscles: List<String>,
     selectedCategory: String,
     onMissingEntries: () -> Unit,
     addExercise: (ExerciseWithSecMuscle) -> Unit,
@@ -398,7 +400,7 @@ private fun CreateExerciseDialogButtons(
                 addExercise(
                     ExerciseWithSecMuscle(
                         exercise = newExercise,
-                        muscles = selectedSecMuscles
+                        muscles = turnStringListToMuscleList(selectedSecMuscles)
                     )
                 )
             }
@@ -407,96 +409,6 @@ private fun CreateExerciseDialogButtons(
                 text = stringResource(R.string.confirm_button),
                 color = MaterialTheme.colors.secondary
             )
-        }
-    }
-}
-
-@Composable
-private fun ChooseSecMusclesDialog(
-    muscles: List<String>,
-    selectedSecMuscles: List<Muscle>,
-    addSelectedSecMuscle: (Muscle) -> Unit,
-    removeSelectedSecMuscle: (Muscle) -> Unit,
-    onDismissRequest: () -> Unit
-) {
-    Dialog (onDismissRequest = { onDismissRequest() }) {
-        Card (
-            modifier = Modifier
-                .size(width = 250.dp, height = 600.dp),
-            backgroundColor = MaterialTheme.colors.primary,
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column (
-                modifier = Modifier
-                    .padding(16.dp)
-            ) {
-                Text (
-                    modifier = Modifier.padding(8.dp),
-                    text = stringResource(R.string.upsert_secondary_muscles_long_caption),
-                    color = MaterialTheme.colors.onPrimary,
-                    style = MaterialTheme.typography.h6
-                )
-
-                Divider()
-
-                Column (
-                    modifier = Modifier
-                        .height(490.dp)
-                ) {
-                    LazyColumn {
-                        items(muscles) { muscle ->
-                            val isSelected = selectedSecMuscles.contains(Muscle(muscle))
-                            Row (
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .selectable(
-                                        selected = (isSelected),
-                                        onClick = {
-                                            if (isSelected) {
-                                                removeSelectedSecMuscle(Muscle(muscle))
-                                            } else {
-                                                addSelectedSecMuscle(Muscle(muscle))
-                                            }
-                                        }
-                                    )
-                                    .padding(horizontal = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = (isSelected),
-                                    onClick = {
-                                        if (isSelected) {
-                                            removeSelectedSecMuscle(Muscle(muscle))
-                                        } else {
-                                            addSelectedSecMuscle(Muscle(muscle))
-                                        }
-                                    }
-                                )
-
-                                Spacer(modifier = Modifier.width(16.dp))
-
-                                Text(
-                                    text = muscle,
-                                    color = MaterialTheme.colors.onPrimary
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Divider()
-
-                Row {
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    TextButton(onClick = { onDismissRequest() }) {
-                        Text(
-                            text = stringResource(R.string.confirm_button),
-                            color = MaterialTheme.colors.secondary
-                        )
-                    }
-                }
-            }
         }
     }
 }
@@ -538,18 +450,38 @@ private fun checkExerciseEntries(exercise: Exercise): Boolean {
     return (exercise.exerciseName == "" || exercise.primMuscle == "" || exercise.category == "")
 }
 
-private fun turnMuscleListToString(muscles: List<Muscle>): String {
+private fun turnStringListToString(strings: List<String>): String {
     var muscleString = ""
 
-    for (muscle in muscles) {
-        muscleString += if (muscle.muscleName != muscles[muscles.lastIndex].muscleName) {
-            "${muscle.muscleName}, "
+    for (string in strings) {
+        muscleString += if (string != strings[strings.lastIndex]) {
+            "$string, "
         } else {
-            muscle.muscleName
+            string
         }
     }
 
     return muscleString
+}
+
+private fun turnMuscleListToStringList(muscles: List<Muscle>): List<String> {
+    val stringList: MutableList<String> = mutableListOf()
+
+    muscles.forEach {
+        stringList.add(it.muscleName)
+    }
+
+    return stringList.toList()
+}
+
+private fun turnStringListToMuscleList(strings: List<String>): List<Muscle> {
+    val muscleList: MutableList<Muscle> = mutableListOf()
+
+    strings.forEach {
+        muscleList.add(Muscle(it))
+    }
+
+    return muscleList.toList()
 }
 
 @Preview
@@ -559,8 +491,7 @@ private fun ExerciseCreationDialogPreview() {
         ExerciseCreationDialog(
             exercise = createEmptyExercise(),
             addExercise = {},
-            onDismissRequest = {},
-            isBeingEdited = false
+            onDismissRequest = {}
         )
     }
 }

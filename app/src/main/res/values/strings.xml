@@ -50,6 +50,10 @@
     <string name="create_exercise_caption">Create exercise</string>
     <string name="missing_entries_dialog_message">There are missing entries</string>
 
+
+    //Exercise filter
+    <string name="clear_filter_button">Clear</string>
+
     //Muscles
     <string name="muscle_name_chest">Chest</string>
     <string name="muscle_name_biceps">Biceps</string>
@@ -69,12 +73,13 @@
     <string name="muscle_name_abductors">Abductors</string>
     <string name="muscle_name_full_body">Full Body</string>
     <string name="muscle_name_olympic">Olympic</string>
-    <string name="muscle_category_name_other">Other</string>
+
 
     //Categories
     <string name="category_name_dumbbells">Dumbbells</string>
     <string name="category_name_barbell">Barbell</string>
-    <string name="category_name_bodyweight">Bodyweight</string>
+    <string name="category_name_weighted_bodyweight">Weighted Bodyweight</string>
+    <string name="category_name_assisted_bodyweight">Assisted Bodyweight</string>
     <string name="category_name_resistance_bands">Resistance Bands</string>
     <string name="category_name_kettlebells">Kettlebells</string>
     <string name="category_name_trap_bar">Trap Bar</string>
@@ -82,6 +87,9 @@
     <string name="category_name_machine">Machine</string>
     <string name="category_name_cable">Cable</string>
     <string name="category_name_cardio">Cardio</string>
+    <string name="category_name_duration">Duration</string>
+    <string name="category_name_reps_only">Reps Only</string>
+    <string name="category_name_other">Other</string>
 
 
     //Miscellaneous

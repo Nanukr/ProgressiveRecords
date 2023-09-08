@@ -2,13 +2,14 @@ package com.rib.progressiverecords.ui.theme
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -17,14 +18,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -208,16 +212,126 @@ fun SingleOptionChoosingDialog(
 }
 
 @Composable
+fun MultipleOptionsChoosingDialog(
+    title: Int,
+    options: List<String>,
+    selectedOptions: List<String>,
+    addSelectedOption: (String) -> Unit,
+    removeSelectedOption: (String) -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    Dialog (onDismissRequest = { onDismissRequest() }) {
+        Card (
+            modifier = Modifier
+                .size(width = 250.dp, height = 600.dp),
+            backgroundColor = MaterialTheme.colors.primary,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column (
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Text (
+                    modifier = Modifier.padding(8.dp),
+                    text = stringResource(title),
+                    color = MaterialTheme.colors.onPrimary,
+                    style = MaterialTheme.typography.h6
+                )
+
+                Divider()
+
+                MultipleOptionsChoosingColumn(
+                    options = options,
+                    selectedOptions = selectedOptions,
+                    addSelectedOption = addSelectedOption,
+                    removeSelectedOption = removeSelectedOption
+                )
+
+                Divider()
+
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    TextButton(onClick = { onDismissRequest() }) {
+                        Text(
+                            text = stringResource(R.string.confirm_button),
+                            color = MaterialTheme.colors.secondary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MultipleOptionsChoosingColumn(
+    options: List<String>,
+    selectedOptions: List<String>,
+    addSelectedOption: (String) -> Unit,
+    removeSelectedOption: (String) -> Unit
+) {
+    Column (
+        modifier = Modifier
+            .height(490.dp)
+    ) {
+        LazyColumn {
+            items(options) { option ->
+                val isSelected = selectedOptions.contains(option)
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = (isSelected),
+                            onClick = {
+                                if (isSelected) {
+                                    removeSelectedOption(option)
+                                } else {
+                                    addSelectedOption(option)
+                                }
+                            }
+                        )
+                        .padding(horizontal = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = {
+                            if (isSelected) {
+                                removeSelectedOption(option)
+                            } else {
+                                addSelectedOption(option)
+                            }
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Text(
+                        text = option,
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
     hint: String = "Search...",
     onSearch: (String) -> Unit
 ) {
     var text by rememberSaveable { mutableStateOf("") }
-    var isHintDisplayed by rememberSaveable { mutableStateOf(hint != "") }
+    var isTrailingDisplayed by rememberSaveable { mutableStateOf(false) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     Box (modifier = modifier) {
-        BasicTextField(
+        TextField(
             value = text,
             onValueChange = {
                 text = it
@@ -230,19 +344,55 @@ fun SearchBar(
                 .fillMaxWidth()
                 .shadow(5.dp, CircleShape)
                 .background(MaterialTheme.colors.primary)
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(horizontal = 8.dp)
                 .onFocusChanged {
-                    isHintDisplayed = !it.isFocused
+                    isTrailingDisplayed = it.isFocused
                 }
+            ,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.primary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = MaterialTheme.colors.onPrimary
+            ),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    isTrailingDisplayed = false
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
+            ),
+            label = {
+                Text(
+                    text = hint,
+                    color = Color.LightGray
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_search),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
+                )
+            },
+            trailingIcon = {
+                if (isTrailingDisplayed) {
+                    Icon(
+                        modifier = Modifier
+                            .clickable{
+                                text = ""
+                                onSearch(text)
+                            },
+                        painter = painterResource(R.drawable.ic_close),
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.onPrimary
+                    )
+                }
+            }
         )
-
-        if (isHintDisplayed) {
-            Text(
-                text = hint,
-                color = Color.LightGray,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-            )
-        }
     }
 }
 
@@ -267,6 +417,21 @@ private fun StandardButtonPreview() {
 private fun StandardTextFieldPreview() {
     ProgressiveRecordsTheme {
         StandardTextField(entryValue = "Example", onValueChange = {}, isNumeric = false)
+    }
+}
+
+@Composable
+@Preview
+private fun MultipleOptionsChoosingDialogPreview() {
+    ProgressiveRecordsTheme {
+        MultipleOptionsChoosingDialog(
+            title = R.string.upsert_secondary_muscles_long_caption,
+            options = listOf("Option1", "Option2", "Option3", "Option4"),
+            selectedOptions = listOf("Option1", "Option3"),
+            addSelectedOption = {},
+            removeSelectedOption = {},
+            onDismissRequest = {}
+        )
     }
 }
 

@@ -2,7 +2,6 @@ package com.rib.progressiverecords.ui
 
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,6 +33,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.rib.progressiverecords.*
 import com.rib.progressiverecords.R
+import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.TimeLength
@@ -134,21 +134,21 @@ fun SessionCreationScreen(
         if (addingExercise.value) {
             SelectExerciseDialog(
                 onDismissRequest = { addingExercise.value = false },
-                onExerciseSelected = { exerciseName ->
-                    addingExercise.value = false
+                onExerciseSelected = { exercise ->
+                    if (exercise != null) {
+                        addingExercise.value = false
 
-                    //val category = viewModel.getCategoryWithExerciseName(exerciseName)
+                        val lastExercisePosition = if (records.isEmpty()) { 0 } else { records[records.lastIndex].sessionPosition }
 
-                    val lastExercisePosition = if (records.isEmpty()) { 0 } else { records[records.lastIndex].sessionPosition }
-
-                    records = records + createNewRecord(
-                        sessionId = session.id,
-                        previousSet = 0,
-                        exerciseName = exerciseName,
-                        sessionPosition = lastExercisePosition + 1,
-                        category = ""
-                    )
-                    viewModel.newRecords = records
+                        records = records + createNewRecord(
+                            sessionId = session.id,
+                            previousSet = 0,
+                            exerciseName = exercise.exerciseName,
+                            sessionPosition = lastExercisePosition + 1,
+                            category = exercise.category
+                        )
+                        viewModel.newRecords = records
+                    }
                 }
             )
         }
@@ -470,7 +470,7 @@ private fun CancelButton (
 @Composable
 private fun SelectExerciseDialog (
     onDismissRequest: () -> Unit,
-    onExerciseSelected: (String) -> Unit
+    onExerciseSelected: (Exercise?) -> Unit
 ) {
     Dialog (
         properties = DialogProperties(usePlatformDefaultWidth = false),

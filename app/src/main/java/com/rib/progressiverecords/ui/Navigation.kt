@@ -20,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import com.rib.progressiverecords.BottomNavItem
-import com.rib.progressiverecords.ExerciseViewModel
 import com.rib.progressiverecords.SessionViewModel
 
 @Composable
@@ -68,7 +67,7 @@ fun BottomNavigationBar(
     ) {
         BottomNavigation (
             backgroundColor = MaterialTheme.colors.primary,
-            elevation = 5.dp
+            elevation = 12.dp
         ) {
             items.forEach{ item ->
                 val selected = when (item.name) {

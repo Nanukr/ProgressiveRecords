@@ -84,8 +84,6 @@ class RecordRepository private constructor(
 
     fun getExercises(): Flow<List<ExerciseWithSecMuscle>> = database.recordDao().getExercises()
 
-    fun getCategoryWithExerciseName(exerciseName: String): String = database.recordDao().getCategoryWithExerciseName(exerciseName)
-
     companion object {
         private var INSTANCE: RecordRepository? = null
 

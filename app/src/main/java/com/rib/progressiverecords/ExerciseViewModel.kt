@@ -64,16 +64,10 @@ class ExerciseViewModel : ViewModel() {
             filters.muscles.contains(exercise.primMuscle)
         }
 
-        val matchesCategories: Boolean = if (filters.muscles.isEmpty()) {
+        val matchesCategories: Boolean = if (filters.categories.isEmpty()) {
             true
         } else {
-            filters.muscles.contains(exercise.primMuscle)
-        }
-
-        if (matchesSearch && matchesMuscles && matchesCategories) {
-            Log.d("Exercise", "It matches!: ${exercise.exerciseName}")
-        } else {
-            Log.d("Exercise", "Doesn't match!: ${exercise.exerciseName}")
+            filters.categories.contains(exercise.category)
         }
 
         return matchesSearch && matchesMuscles && matchesCategories

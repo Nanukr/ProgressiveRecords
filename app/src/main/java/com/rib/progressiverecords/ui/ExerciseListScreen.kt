@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -18,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -37,10 +39,11 @@ import kotlinx.coroutines.launch
 fun ExerciseListScreen(
     viewModel: ExerciseViewModel = viewModel(),
     isBeingSelected: Boolean,
-    onExerciseSelected: (String) -> Unit
+    onExerciseSelected: (Exercise?) -> Unit
 ) {
     var exerciseBeingModified by rememberSaveable { mutableStateOf(false) }
     var exerciseBeingDeleted by rememberSaveable { mutableStateOf(false) }
+    var choosingFilters by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -65,6 +68,7 @@ fun ExerciseListScreen(
                 exerciseBeingDeleted = true
                 viewModel.exerciseBeingModified = it
                        },
+            onChooseFilters = { choosingFilters = true },
             isBeingSelected = isBeingSelected
         )
 
@@ -77,8 +81,7 @@ fun ExerciseListScreen(
                     viewModel.exerciseBeingModified = null
                     addExerciseToDb(it, viewModel)
                 },
-                onDismissRequest = { exerciseBeingModified = false },
-                isBeingEdited = false
+                onDismissRequest = { exerciseBeingModified = false }
             )
         }
 
@@ -96,27 +99,43 @@ fun ExerciseListScreen(
                 }
             )
         }
+
+        if (choosingFilters) {
+            ExerciseListFilterDialog(
+                viewModel = viewModel,
+                currentFilters = viewModel.sortParams.collectAsState().value,
+                onDismissRequest = { choosingFilters = false }
+            )
+        }
     }
-    BackHandler {}
+    BackHandler {
+        if (isBeingSelected) {
+            onExerciseSelected(null)
+        }
+    }
 }
 
 @Composable
 fun ExerciseList(
     viewModel: ExerciseViewModel,
-    onSelectItem: (String) -> Unit,
+    onSelectItem: (Exercise) -> Unit,
     onEditItem: (ExerciseWithSecMuscle) -> Unit,
     onDelete: (ExerciseWithSecMuscle) -> Unit,
+    onChooseFilters: () -> Unit,
     isBeingSelected: Boolean
 ) {
     val exercises = viewModel.exercises.collectAsState(initial = emptyList())
 
     LazyColumn(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(vertical = 16.dp)
             .background(color = MaterialTheme.colors.background)
     ) {
         item {
-            ExerciseListHeader(viewModel = viewModel)
+            ExerciseListHeader(
+                viewModel = viewModel,
+                onChooseFilters = { onChooseFilters() }
+            )
         }
 
         items(exercises.value) {exercise ->
@@ -132,7 +151,9 @@ fun ExerciseList(
         if (exercises.value.isEmpty()) {
             item {
                 Text(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     text = stringResource(R.string.empty_exercise_list_message),
                     color = MaterialTheme.colors.onBackground,
                     style = MaterialTheme.typography.body1,
@@ -149,61 +170,96 @@ fun ExerciseList(
 
 @Composable
 private fun ExerciseListHeader(
-    viewModel: ExerciseViewModel
+    viewModel: ExerciseViewModel,
+    onChooseFilters: () -> Unit
 ) {
     Row (
         modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SearchBar(hint = "Search exercise...",onSearch = { viewModel.onChangeSearchText(it) })
+        SearchBar(
+            modifier = Modifier.fillMaxWidth(0.87f),
+            hint = "Search exercise...",
+            onSearch = { viewModel.onChangeSearchText(it) }
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Icon(
+            modifier = Modifier
+                .padding(8.dp)
+                .clickable { onChooseFilters() },
+            painter = painterResource(R.drawable.ic_filter),
+            contentDescription = "",
+            tint = MaterialTheme.colors.onPrimary
+        )
     }
 }
 
 @Composable
 private fun ExerciseItem(
     exercise: ExerciseWithSecMuscle,
-    onSelect: (String) -> Unit,
+    onSelect: (Exercise) -> Unit,
     onEdit: (ExerciseWithSecMuscle) -> Unit,
     onDelete: (ExerciseWithSecMuscle) -> Unit,
     isBeingSelected: Boolean
 
 ) {
-    Row (
+    Column (
         modifier = Modifier
-            .padding(8.dp)
-            .then(
-                if (isBeingSelected) {
-                    Modifier.clickable { onSelect(exercise.exercise.exerciseName) }
-                } else {
-                    Modifier
-                }
+            .fillMaxWidth()
+            .background(color = MaterialTheme.colors.primary)
+            ) {
+        Spacer(modifier = Modifier.padding(4.dp))
+
+        Row (
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .then(
+                    if (isBeingSelected) {
+                        Modifier.clickable { onSelect(exercise.exercise) }
+                    } else {
+                        Modifier
+                    }
+                )
+        ) {
+            Text(
+                text = exercise.exercise.exerciseName,
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onBackground
             )
-    ) {
+
+            if (exercise.exercise.isDefault == 0) {
+                Spacer(modifier = Modifier.weight(1f))
+
+                IconButton(onClick = { onEdit(exercise) }) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = stringResource(R.string.edit_exercise_icon_description),
+                        tint = MaterialTheme.colors.onBackground
+                    )
+                }
+
+                IconButton(onClick = { onDelete(exercise) }) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = stringResource(R.string.delete_exercise_icon_description),
+                        tint = MaterialTheme.colors.onBackground
+                    )
+                }
+            }
+        }
+
         Text(
-            text = exercise.exercise.exerciseName,
-            style = MaterialTheme.typography.h5,
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = exercise.exercise.primMuscle,
+            style = MaterialTheme.typography.body1,
             color = MaterialTheme.colors.onBackground
         )
 
-        if (exercise.exercise.isDefault == 0) {
-            Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.padding(4.dp))
 
-            IconButton(onClick = { onEdit(exercise) }) {
-                Icon(
-                    Icons.Filled.Edit,
-                    contentDescription = stringResource(R.string.edit_exercise_icon_description),
-                    tint = MaterialTheme.colors.onBackground
-                )
-            }
-
-            IconButton(onClick = { onDelete(exercise) }) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = stringResource(R.string.delete_exercise_icon_description),
-                    tint = MaterialTheme.colors.onBackground
-                )
-            }
-        }
+        Divider()
     }
 }
 
