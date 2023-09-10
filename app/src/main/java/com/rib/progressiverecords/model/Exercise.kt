@@ -7,7 +7,10 @@ import java.util.*
 
 @Entity
 data class Exercise(
-    @PrimaryKey var exerciseName: String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+
+    var exerciseName: String,
 
     @ColumnInfo(name = "isDefault", defaultValue = "1")
     val isDefault: Int = 1,

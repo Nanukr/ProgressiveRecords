@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.rib.progressiverecords.database.RecordDatabase
 import com.rib.progressiverecords.database.migration_1_2
 import com.rib.progressiverecords.database.migration_3_4
+import com.rib.progressiverecords.database.migration_4_5
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
 import com.rib.progressiverecords.model.Record
@@ -29,7 +30,7 @@ class RecordRepository private constructor(
         RecordDatabase::class.java,
         DATABASE_NAME
     )
-    .addMigrations(migration_1_2, migration_3_4)
+    .addMigrations(migration_1_2, migration_3_4, migration_4_5)
     .createFromAsset("$DATABASE_NAME.db")
     .build()
 

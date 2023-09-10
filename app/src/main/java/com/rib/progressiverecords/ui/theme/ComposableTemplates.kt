@@ -80,6 +80,7 @@ fun StandardButton (
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StandardTextField (
     modifier: Modifier = Modifier,
@@ -88,49 +89,45 @@ fun StandardTextField (
     isNumeric: Boolean,
     isEnabled: Boolean = true,
     readOnly: Boolean = false,
-    borderColor: Color = Color.Transparent,
-    textAlign: TextAlign = TextAlign.Center,
-    trailingIcon: Int = 0
+    textAlign: TextAlign = TextAlign.Center
 ) {
-    var textFieldState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(text = entryValue))
-    }
+    var textFieldValue by rememberSaveable { mutableStateOf(entryValue) }
 
-    OutlinedTextField(
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    TextField(
         modifier = modifier
             .padding(4.dp),
-        value = textFieldState,
+        value = textFieldValue,
         onValueChange = {
-            textFieldState = it
-            onValueChange(textFieldState.annotatedString.toString())
+            textFieldValue = it
+            onValueChange(textFieldValue)
         },
-        keyboardOptions = KeyboardOptions(keyboardType =
-        if (isNumeric) { KeyboardType.Number} else { KeyboardType.Text }),
         singleLine = true,
         enabled = isEnabled,
         readOnly = readOnly,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = TextFieldDefaults.textFieldColors(
             backgroundColor = MaterialTheme.colors.primary,
             textColor = MaterialTheme.colors.onPrimary,
             cursorColor = MaterialTheme.colors.onPrimary,
-            focusedBorderColor = borderColor,
-            unfocusedBorderColor = borderColor,
-            disabledBorderColor = if (isEnabled) {
-                MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled)
-            } else { borderColor },
-            leadingIconColor = MaterialTheme.colors.onPrimary,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
         ),
         textStyle = TextStyle(textAlign = textAlign),
         shape = RoundedCornerShape(4.dp),
-        trailingIcon = {
-            if(trailingIcon != 0) {
-                Icon(
-                    painter = painterResource(id = trailingIcon),
-                    contentDescription = "",
-                    tint = MaterialTheme.colors.onPrimary
-                )
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Done,
+            keyboardType =
+                if (isNumeric) { KeyboardType.Number} else { KeyboardType.Text }
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
             }
-        }
+        ),
     )
 }
 

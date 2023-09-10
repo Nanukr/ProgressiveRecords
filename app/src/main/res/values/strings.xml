@@ -18,6 +18,7 @@
     <string name="save_session_error_message">You can\'t save a session with no records</string>
     <string name="save_session_icon_description">Exit and save</string>
     <string name="new_session_name">New session</string>
+    <string name="change_exercise_button">Change exercise</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Edit current session</string>
@@ -33,8 +34,8 @@
     <string name="edit_exercise_icon_description">Edit exercise</string>
     <string name="delete_exercise_icon_description">Delete exercise</string>
     <string name="confirm_exercise_deletion_message">Are you sure you want to delete the following exercise: %s ? \n\n This will not delete any records containing this exercise</string>
-    <string name="change_exercise_icon_description">Change exercise</string>
     <string name="create_exercise_icon_description">Create exercise</string>
+    <string name="add_exercises_to_session_button">Add exercises</string>
 
     //Exercise creation
     <string name="upsert_exercise_name_caption">Name</string>

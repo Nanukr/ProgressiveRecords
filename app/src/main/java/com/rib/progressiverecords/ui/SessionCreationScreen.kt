@@ -15,6 +15,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -134,20 +136,22 @@ fun SessionCreationScreen(
         if (addingExercise.value) {
             SelectExerciseDialog(
                 onDismissRequest = { addingExercise.value = false },
-                onExerciseSelected = { exercise ->
-                    if (exercise != null) {
-                        addingExercise.value = false
+                onExerciseSelected = { exercises ->
+                    addingExercise.value = false
 
-                        val lastExercisePosition = if (records.isEmpty()) { 0 } else { records[records.lastIndex].sessionPosition }
+                    if (exercises.isNotEmpty()) {
+                        exercises.forEach { exercise ->
+                            val lastExercisePosition = if (records.isEmpty()) { 0 } else { records[records.lastIndex].sessionPosition }
 
-                        records = records + createNewRecord(
-                            sessionId = session.id,
-                            previousSet = 0,
-                            exerciseName = exercise.exerciseName,
-                            sessionPosition = lastExercisePosition + 1,
-                            category = exercise.category
-                        )
-                        viewModel.newRecords = records
+                            records = records + createNewRecord(
+                                sessionId = session.id,
+                                previousSet = 0,
+                                exerciseName = exercise.exerciseName,
+                                sessionPosition = lastExercisePosition + 1,
+                                category = exercise.category
+                            )
+                            viewModel.newRecords = records
+                        }
                     }
                 }
             )
@@ -255,6 +259,8 @@ private fun ExerciseHeader (
     selectExercise: () -> Unit,
     exerciseName: String
 ) {
+    var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
     Column {
         Row (
             modifier = Modifier
@@ -270,11 +276,24 @@ private fun ExerciseHeader (
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Icon(
-                Icons.Filled.MoreVert,
-                tint = MaterialTheme.colors.onBackground,
-                contentDescription = stringResource(R.string.change_exercise_icon_description)
-            )
+            Box(modifier = Modifier
+                .wrapContentSize(Alignment.TopStart)) {
+                IconButton(onClick = { dropdownMenuExpanded = true }) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        tint = MaterialTheme.colors.onBackground,
+                        contentDescription = ""
+                    )
+                }
+                DropdownMenu(
+                    expanded = dropdownMenuExpanded,
+                    onDismissRequest = { dropdownMenuExpanded = false }
+                ) {
+                    DropdownMenuItem(onClick = { /*TODO*/ }) {
+                        androidx.compose.material.Text(stringResource(R.string.change_exercise_button))
+                    }
+                }
+            }
         }
 
         Row (
@@ -470,7 +489,7 @@ private fun CancelButton (
 @Composable
 private fun SelectExerciseDialog (
     onDismissRequest: () -> Unit,
-    onExerciseSelected: (Exercise?) -> Unit
+    onExerciseSelected: (List<Exercise>) -> Unit
 ) {
     Dialog (
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -480,7 +499,7 @@ private fun SelectExerciseDialog (
             ExerciseListScreen(
                 viewModel = ExerciseViewModel(),
                 isBeingSelected = true,
-                onExerciseSelected = { onExerciseSelected(it) }
+                onExercisesSelected = { onExerciseSelected(it) }
             )
         }
     }

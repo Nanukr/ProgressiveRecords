@@ -29,6 +29,9 @@ class ExerciseViewModel : ViewModel() {
             _exercises.value
         )
 
+    private val _exercisesSelected: MutableStateFlow<List<Exercise>> = MutableStateFlow(emptyList())
+    val exercisesSelected = _exercisesSelected.asStateFlow()
+
     var exerciseBeingModified: ExerciseWithSecMuscle? = null
 
     init {
@@ -49,6 +52,14 @@ class ExerciseViewModel : ViewModel() {
 
     fun onChangeFilterCategories(categories: List<String>) {
         _sortParams.value = _sortParams.value.copy(categories = categories)
+    }
+
+    fun onChangeSelectedExercises(exercise: Exercise) {
+        if (_exercisesSelected.value.contains(exercise)) {
+            _exercisesSelected.value -= exercise
+        } else {
+            _exercisesSelected.value += exercise
+        }
     }
 
     private fun matchesFilters(exercise: Exercise, filters: ExerciseSortParams): Boolean {
