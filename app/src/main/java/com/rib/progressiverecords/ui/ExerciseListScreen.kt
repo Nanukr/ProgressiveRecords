@@ -196,7 +196,7 @@ private fun ExerciseListHeader(
     ) {
         SearchBar(
             modifier = Modifier.fillMaxWidth(0.87f),
-            hint = "Search exercise...",
+            hint = stringResource(R.string.search_exercise_bar_hint),
             onSearch = { viewModel.onChangeSearchText(it) }
         )
 
@@ -317,9 +317,19 @@ private fun DeleteExerciseDialog(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = stringResource(R.string.confirm_exercise_deletion_message, exercise.exercise.exerciseName),
+                    text = stringResource(R.string.confirm_exercise_deletion_message_top, exercise.exercise.exerciseName),
                     color = MaterialTheme.colors.onPrimary,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.body1
+                )
+
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = stringResource(R.string.confirm_exercise_deletion_message_bottom),
+                    color = MaterialTheme.colors.onPrimary,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.body2
                 )
 
                 Row (

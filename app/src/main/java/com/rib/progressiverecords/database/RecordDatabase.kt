@@ -161,7 +161,7 @@ val migration_4_5 = object: Migration(4, 5) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL(
             "CREATE TABLE IF NOT EXISTS UpdatedExercise (" +
-                    "id INTEGER NOT NULL PRIMARY KEY DEFAULT 0" +
+                    "id INTEGER NOT NULL PRIMARY KEY DEFAULT 0," +
                     "exerciseName TEXT NOT NULL," +
                     "isDefault INTEGER NOT NULL DEFAULT 1," +
                     "primMuscle TEXT NOT NULL DEFAULT ''," +

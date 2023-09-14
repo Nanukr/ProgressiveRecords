@@ -8,6 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.rib.progressiverecords.BottomNavItem
@@ -28,18 +29,23 @@ fun BuilderScreen(
 
             val currentRoute = navBackStackEntry?.destination?.route
 
+            val itemNames = listOf(
+                stringResource(R.string.session_nav_item_text),
+                stringResource(R.string.exercise_nav_item_text)
+            )
+
             bottomBarState.value = (currentRoute == "session_list" || currentRoute == "exercise")
 
             BottomNavigationBar(
                 items = listOf(
                     BottomNavItem(
-                        name = "Sessions",
+                        name = itemNames[0],
                         route = "session_screen",
                         icon = painterResource(R.drawable.ic_storage)
                     ),
 
                     BottomNavItem(
-                        name = "Exercises",
+                        name = itemNames[1],
                         route = "exercise",
                         icon = painterResource(R.drawable.ic_dumbbell)
                     )

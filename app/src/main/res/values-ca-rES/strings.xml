@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Progressive Records</string>
+
+    //Session list
+    <string name="empty_session_list_message">No hi ha sessions guardades</string>
+    <string name="create_session_icon_description">Crear sessió</string>
+
+    //Session creation
+    <string name="set_label">Set</string>
+    <string name="repetitions_label">Repeticions</string>
+    <string name="weight_label">Pes</string>
+    <string name="finish_set_icon_description">Acabar set</string>
+    <string name="add_set_button">Afegir set</string>
+    <string name="add_exercise_button">Afegir exercici</string>
+    <string name="cancel_session_button">Cancel·lar i descartar canvis</string>
+    <string name="save_session_top_message">Acabar i guardar sessió?</string>
+    <string name="save_session_bottom_message">Només s\'actualitzaran els sets marcats</string>
+    <string name="save_session_error_message">No pots guardar una sessió sense entrades</string>
+    <string name="save_session_icon_description">Sortir i guardar</string>
+    <string name="new_session_name">Nova sessió</string>
+    <string name="change_exercise_button">Canviar exercici</string>
+
+    //Session detail
+    <string name="edit_detailed_session_icon_description">Editar sessió actual</string>
+    <string name="back_button_icon_description">Retrocedir</string>
+    <string name="session_list_exercise_item">x %s reps</string>
+    <string name="reps_label">reps</string>
+    <string name="delete_session_button_caption">Eliminar sessió</string>
+    <string name="delete_session_dialog_top_message">Eliminar sessió?</string>
+    <string name="delete_session_dialog_bottom_message">Aquesta acció no es pot desfer</string>
+
+    //Exercise list
+    <string name="empty_exercise_list_message">No s\'han trobat exercicis</string>
+    <string name="edit_exercise_icon_description">Editar exercici</string>
+    <string name="delete_exercise_icon_description">Eliminar exercici</string>
+    <string name="confirm_exercise_deletion_message_top">Eliminar el següent exercici: %s?</string>
+    <string name="confirm_exercise_deletion_message_bottom">No s\'eliminarà cap registre que contingui aquest exercici</string>
+    <string name="create_exercise_icon_description">Crear exercici</string>
+    <string name="add_exercises_to_session_button">Afegir exercicis</string>
+    <string name="search_exercise_bar_hint">Buscar exercici…</string>
+
+    //Exercise creation
+    <string name="upsert_exercise_name_caption">Nom</string>
+    <string name="enter_exercise_name_placeholder">Introduir nom</string>
+    <string name="upsert_target_muscles_caption">Músculs treballats</string>
+    <string name="upsert_primary_muscle_short_caption">Primari</string>
+    <string name="upsert_secondary_muscles_short_caption">Secundaris</string>
+    <string name="upsert_primary_muscle_long_caption">Múscul primari</string>
+    <string name="upsert_secondary_muscles_long_caption">Músculs secundaris</string>
+    <string name="upsert_category_caption">Categoria</string>
+    <string name="upsert_other_options_caption">Altres opcions</string>
+    <string name="create_exercise_caption">Crear exercici</string>
+    <string name="missing_entries_dialog_message">Falten entrades</string>
+
+
+    //Exercise filter
+    <string name="clear_filter_button">Netejar</string>
+
+    //Navigation bar
+    <string name="session_nav_item_text">Sessions</string>
+    <string name="exercise_nav_item_text">Exercicis</string>
+
+    //Muscles
+    <string name="muscle_name_chest">Pit</string>
+    <string name="muscle_name_biceps">Bíceps</string>
+    <string name="muscle_name_triceps">Tríceps</string>
+    <string name="muscle_name_forearms">Avantbraços</string>
+    <string name="muscle_name_core">Abdominals</string>
+    <string name="muscle_name_traps">Trapezis</string>
+    <string name="muscle_name_lats">Dorsals</string>
+    <string name="muscle_name_shoulders">Espatlles</string>
+    <string name="muscle_name_upper_back">Esquena Alta</string>
+    <string name="muscle_name_lower_back">Esquena Baixa</string>
+    <string name="muscle_name_quads">Quàdriceps</string>
+    <string name="muscle_name_glutes">Glutis</string>
+    <string name="muscle_name_hamstrings">Femorals</string>
+    <string name="muscle_name_calves">Calves</string>
+    <string name="muscle_name_adductors">Adductors</string>
+    <string name="muscle_name_abductors">Abductors</string>
+    <string name="muscle_name_full_body">Tot el cos</string>
+    <string name="muscle_name_olympic">Olímpic</string>
+
+
+    //Categories
+    <string name="category_name_dumbbells">Manuelles</string>
+    <string name="category_name_barbell">Barra</string>
+    <string name="category_name_weighted_bodyweight">Pes corporal amb pes</string>
+    <string name="category_name_assisted_bodyweight">Pes corporal assistit</string>
+    <string name="category_name_resistance_bands">Gomes elàstiques</string>
+    <string name="category_name_kettlebells">Pesa russa</string>
+    <string name="category_name_trap_bar">Trap Bar</string>
+    <string name="category_name_smith_machine">Màquina Smith</string>
+    <string name="category_name_machine">Màquina</string>
+    <string name="category_name_cable">Cable</string>
+    <string name="category_name_cardio">Càrdio</string>
+    <string name="category_name_duration">Duració</string>
+    <string name="category_name_reps_only">Només Repeticions</string>
+    <string name="category_name_other">Altre</string>
+
+
+    //Miscellaneous
+    <string name="cancel_button">Cancel·lar</string>
+    <string name="confirm_button">Confirmar</string>
+
+</resources>

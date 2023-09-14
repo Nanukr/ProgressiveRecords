@@ -33,9 +33,11 @@
     <string name="empty_exercise_list_message">No exercises found</string>
     <string name="edit_exercise_icon_description">Edit exercise</string>
     <string name="delete_exercise_icon_description">Delete exercise</string>
-    <string name="confirm_exercise_deletion_message">Are you sure you want to delete the following exercise: %s ? \n\n This will not delete any records containing this exercise</string>
+    <string name="confirm_exercise_deletion_message_top">Delete following exercise: %s?</string>
+    <string name="confirm_exercise_deletion_message_bottom">This will not delete any records containing this exercise</string>
     <string name="create_exercise_icon_description">Create exercise</string>
     <string name="add_exercises_to_session_button">Add exercises</string>
+    <string name="search_exercise_bar_hint">Search exercise…</string>
 
     //Exercise creation
     <string name="upsert_exercise_name_caption">Name</string>
@@ -47,13 +49,16 @@
     <string name="upsert_secondary_muscles_long_caption">Secondary muscles</string>
     <string name="upsert_category_caption">Category</string>
     <string name="upsert_other_options_caption">Other options</string>
-    <string name="upsert_assisted_caption">Is assisted</string>
     <string name="create_exercise_caption">Create exercise</string>
     <string name="missing_entries_dialog_message">There are missing entries</string>
 
 
     //Exercise filter
     <string name="clear_filter_button">Clear</string>
+
+    //Navigation bar
+    <string name="session_nav_item_text">Session</string>
+    <string name="exercise_nav_item_text">Exercise</string>
 
     //Muscles
     <string name="muscle_name_chest">Chest</string>

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import com.rib.progressiverecords.BottomNavItem
+import com.rib.progressiverecords.R
 import com.rib.progressiverecords.SessionViewModel
 
 @Composable
@@ -59,6 +61,11 @@ fun BottomNavigationBar(
     onItemClick: (BottomNavItem) -> Unit
 ) {
     val backStackEntry = navController.currentBackStackEntryAsState()
+
+    val itemNames = listOf(
+        stringResource(R.string.session_nav_item_text),
+        stringResource(R.string.exercise_nav_item_text)
+    )
     
     AnimatedVisibility(
         visible = bottomBarState.value,
@@ -71,8 +78,8 @@ fun BottomNavigationBar(
         ) {
             items.forEach{ item ->
                 val selected = when (item.name) {
-                    "Sessions" -> backStackEntry.value?.destination?.route == "session_list"
-                    "Exercises" -> backStackEntry.value?.destination?.route == "exercise"
+                    itemNames[0] -> backStackEntry.value?.destination?.route == "session_list"
+                    itemNames[1] -> backStackEntry.value?.destination?.route == "exercise"
                     else -> { false }
                 }
 
