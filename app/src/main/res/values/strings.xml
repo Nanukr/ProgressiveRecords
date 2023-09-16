@@ -19,6 +19,7 @@
     <string name="save_session_icon_description">Exit and save</string>
     <string name="new_session_name">New session</string>
     <string name="change_exercise_button">Change exercise</string>
+    <string name="delete_exercise_dialog_title">Delete exercise?</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Edit current session</string>
@@ -27,7 +28,6 @@
     <string name="reps_label">reps</string>
     <string name="delete_session_button_caption">Delete session</string>
     <string name="delete_session_dialog_top_message">Delete session?</string>
-    <string name="delete_session_dialog_bottom_message">This action cannot be undone</string>
 
     //Exercise list
     <string name="empty_exercise_list_message">No exercises found</string>
@@ -36,7 +36,7 @@
     <string name="confirm_exercise_deletion_message_top">Delete following exercise: %s?</string>
     <string name="confirm_exercise_deletion_message_bottom">This will not delete any records containing this exercise</string>
     <string name="create_exercise_icon_description">Create exercise</string>
-    <string name="add_exercises_to_session_button">Add exercises</string>
+    <string name="add_exercises_to_session_button">Add</string>
     <string name="search_exercise_bar_hint">Search exercise…</string>
 
     //Exercise creation
@@ -101,5 +101,6 @@
     //Miscellaneous
     <string name="cancel_button">Cancel</string>
     <string name="confirm_button">Confirm</string>
+    <string name="delete_item_dialog_text">This action cannot be undone</string>
 
 </resources>

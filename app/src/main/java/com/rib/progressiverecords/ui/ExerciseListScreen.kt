@@ -369,9 +369,7 @@ private fun SelectButtons(
     ) {
         Button(
             modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .width(150.dp)
-                .height(48.dp),
+                .weight(1f),
             elevation = ButtonDefaults.elevation(
                 defaultElevation = 4.dp
             ),
@@ -386,24 +384,14 @@ private fun SelectButtons(
             )
         }
 
-        Button(
+        StandardButton(
             modifier = Modifier
-                .padding(horizontal = 12.dp)
-                .width(150.dp)
-                .height(48.dp),
-            elevation = ButtonDefaults.elevation(
-                defaultElevation = 4.dp
-            ),
+                .weight(1f),
+            text = stringResource(R.string.add_exercises_to_session_button),
             onClick = { onAddExercises() },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.secondaryVariant
-            )
-        ) {
-            Text(
-                text = stringResource(R.string.add_exercises_to_session_button),
-                color = Color.Black
-            )
-        }
+            backgroundColor = MaterialTheme.colors.secondaryVariant,
+            textColor = MaterialTheme.colors.onSecondary
+        )
     }
 }
 

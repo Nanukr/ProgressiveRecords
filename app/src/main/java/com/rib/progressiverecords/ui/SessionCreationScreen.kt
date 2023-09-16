@@ -2,12 +2,13 @@ package com.rib.progressiverecords.ui
 
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Icon
@@ -24,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,9 +41,7 @@ import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.TimeLength
-import com.rib.progressiverecords.ui.theme.StandardButton
-import com.rib.progressiverecords.ui.theme.StandardOutlinedButton
-import com.rib.progressiverecords.ui.theme.StandardTextField
+import com.rib.progressiverecords.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -51,6 +51,8 @@ fun SessionCreationScreen(
     navController: NavController
 ) {
     val addingExercise = rememberSaveable { mutableStateOf(false) }
+
+    var deletingExercise by rememberSaveable { mutableStateOf(false) }
 
     val changingDate = rememberSaveable { mutableStateOf(false) }
 
@@ -81,6 +83,8 @@ fun SessionCreationScreen(
         SetList(
             session = session,
             exerciseSetsList = exerciseSetsList,
+            viewModel = viewModel,
+            navController = navController,
             onUpdateRecords = { record ->
                 val foundRecord = records.find { it.exerciseName == record.exerciseName && it.setNumber == record.setNumber }
                 records = if (foundRecord == null) {
@@ -100,8 +104,7 @@ fun SessionCreationScreen(
                 viewModel.createdSession = session
             },
             selectExercise = { addingExercise.value = true },
-            viewModel = viewModel,
-            navController = navController
+            onDeleteExercise = { deletingExercise = true }
         )
 
         if (changingDate.value) {
@@ -123,12 +126,15 @@ fun SessionCreationScreen(
         if (savingSession.value) {
             SaveSessionDialog(
                 onDismissRequest = { savingSession.value = false },
-                onSessionSaved = { saveSessionToDb(
-                    viewModel = viewModel,
-                    navController = navController,
-                    records = records,
-                    session = session
-                ) },
+                onSessionSaved = {
+                    saveSessionToDb(
+                        viewModel = viewModel,
+                        navController = navController,
+                        records = records,
+                        session = session
+                    )
+                    savingSession.value = false
+                },
                 viewModel = viewModel
             )
         }
@@ -156,6 +162,19 @@ fun SessionCreationScreen(
                 }
             )
         }
+
+        if (deletingExercise) {
+            DeleteExerciseDialog(
+                onDismissRequest = {
+                    deletingExercise = false
+                    viewModel.positionBeingModified = null
+                },
+                onExerciseDeleted = {
+                    deletingExercise = false
+                    records = deleteSetInPosition(viewModel = viewModel)
+                }
+            )
+        }
     }
 
     BackHandler {
@@ -171,50 +190,50 @@ private fun SetList(
     onUpdateSessionName: (String) -> Unit,
     onOpenDateDialog: () -> Unit,
     selectExercise: () -> Unit,
+    onDeleteExercise: () -> Unit,
     viewModel: SessionViewModel,
     navController: NavController
 ) {
-    if (exerciseSetsList.totalSets.isEmpty()) {
-        Column (modifier = Modifier.fillMaxSize()) {
-            SessionNameAndDate(
-                session = session,
-                onOpenDateDialog = { onOpenDateDialog() },
-                onUpdateSessionName = { onUpdateSessionName(it) }
-            )
+    Column (
+        modifier = Modifier.fillMaxSize()
+    ) {
+        SessionNameAndDate(
+            session = session,
+            onOpenDateDialog = { onOpenDateDialog() },
+            onUpdateSessionName = { onUpdateSessionName(it) }
+        )
 
+        if (exerciseSetsList.totalSets.isEmpty()) {
             AddExerciseButton(selectExercise = { selectExercise() })
 
-            Spacer (modifier = Modifier.weight(1f))
-
             CancelButton(viewModel = viewModel, navController = navController)
-        }
-
-    } else {
-        LazyColumn {
-            item {
-                SessionNameAndDate(
-                    session = session,
-                    onOpenDateDialog = { onOpenDateDialog() },
-                    onUpdateSessionName = { onUpdateSessionName(it) }
-                )
-            }
-
-            items(exerciseSetsList.totalSets) {setList  ->
-                if (setList.isNotEmpty()) {
-                    ExerciseSets(
-                        sets = setList,
-                        sessionId = session.id,
-                        onUpdateRecords = { onUpdateRecords(it) }
-                    )
+        } else {
+            LazyColumn {
+                items(exerciseSetsList.totalSets) {setList  ->
+                    if (setList.isNotEmpty()) {
+                        ExerciseSets(
+                            sets = setList,
+                            sessionId = session.id,
+                            onUpdateRecords = { onUpdateRecords(it) },
+                            onDeleteExercise = {
+                                viewModel.positionBeingModified = it
+                                onDeleteExercise()
+                            }
+                        )
+                    }
                 }
-            }
 
-            item {
-                AddExerciseButton(selectExercise = { selectExercise() })
-            }
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
-            item {
-                CancelButton(viewModel = viewModel, navController = navController)
+                item {
+                    AddExerciseButton(selectExercise = { selectExercise() })
+                }
+
+                item {
+                    CancelButton(viewModel = viewModel, navController = navController)
+                }
             }
         }
     }
@@ -230,7 +249,7 @@ private fun SessionNameAndDate (
 
     Row (
         modifier = Modifier
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -244,6 +263,8 @@ private fun SessionNameAndDate (
             modifier = Modifier
                 .weight(1f)
                 .padding(8.dp)
+                .shadow(5.dp, RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colors.primary)
         )
 
         StandardButton(
@@ -256,20 +277,27 @@ private fun SessionNameAndDate (
 
 @Composable
 private fun ExerciseHeader (
-    selectExercise: () -> Unit,
-    exerciseName: String
+    exerciseName: String,
+    sessionPosition: String,
+    onChangeExercise: () -> Unit,
+    onDeleteExercise: () -> Unit
 ) {
     var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
-    Column {
+    Column (
+        modifier = Modifier
+            .padding(vertical = 4.dp)
+            ) {
         Row (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .clickable { selectExercise() }
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = exerciseName,
+                modifier = Modifier
+                    .padding(4.dp),
+                text = "$sessionPosition: $exerciseName",
                 color = MaterialTheme.colors.onBackground,
                 style = MaterialTheme.typography.h6
             )
@@ -289,8 +317,32 @@ private fun ExerciseHeader (
                     expanded = dropdownMenuExpanded,
                     onDismissRequest = { dropdownMenuExpanded = false }
                 ) {
-                    DropdownMenuItem(onClick = { /*TODO*/ }) {
-                        androidx.compose.material.Text(stringResource(R.string.change_exercise_button))
+                    DropdownMenuItem(onClick = {
+                        onChangeExercise()
+                        dropdownMenuExpanded = false
+                    }) {
+                        Icon(
+                            modifier = Modifier.padding(4.dp),
+                            painter = painterResource(id = R.drawable.ic_swap),
+                            contentDescription = "",
+                            tint = MaterialTheme.colors.onPrimary
+                        )
+
+                        Text(stringResource(R.string.change_exercise_button))
+                    }
+
+                    DropdownMenuItem(onClick = {
+                        onDeleteExercise()
+                        dropdownMenuExpanded = false
+                    }) {
+                        Icon(
+                            modifier = Modifier.padding(4.dp),
+                            painter = painterResource(id = R.drawable.ic_delete),
+                            contentDescription = "",
+                            tint = MaterialTheme.colors.onPrimary
+                        )
+
+                        Text(stringResource(R.string.delete_exercise_icon_description))
                     }
                 }
             }
@@ -298,15 +350,14 @@ private fun ExerciseHeader (
 
         Row (
             modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
                 ) {
             Text (
                 modifier = Modifier
                     .weight(0.5f)
-                    .padding(4.dp)
-                    .fillMaxWidth(),
+                    .padding(4.dp),
                 text = stringResource(R.string.set_label),
                 color = MaterialTheme.colors.onBackground,
                 textAlign = TextAlign.Center
@@ -317,7 +368,8 @@ private fun ExerciseHeader (
                 color = MaterialTheme.colors.onBackground,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(4.dp)
+                    .padding(4.dp),
+                textAlign = TextAlign.Center
             )
 
             Text(
@@ -325,7 +377,8 @@ private fun ExerciseHeader (
                 color = MaterialTheme.colors.onBackground,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(4.dp)
+                    .padding(4.dp),
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.weight(0.5f))
@@ -337,17 +390,24 @@ private fun ExerciseHeader (
 private fun ExerciseSets(
     sets: List<Record>,
     sessionId: UUID,
-    onUpdateRecords: (Record) -> Unit
+    onUpdateRecords: (Record) -> Unit,
+    onDeleteExercise: (Int) -> Unit
 ) {
     val exerciseName = sets[0].exerciseName
     Column (
         modifier = Modifier
-            .padding(8.dp)
-            ) {
+            .fillMaxWidth()
+            .padding(4.dp)
+            .background(color = MaterialTheme.colors.primary)
+    ) {
         ExerciseHeader(
-            selectExercise = { /*TODO*/ },
-            exerciseName = exerciseName
+            exerciseName = exerciseName,
+            sessionPosition = sets[0].sessionPosition.toString(),
+            onChangeExercise = { /*TODO*/ },
+            onDeleteExercise = { onDeleteExercise(sets[0].sessionPosition) }
         )
+
+        Divider(modifier = Modifier.padding(8.dp))
 
         sets.forEach { record ->
             val recordIsSaved = rememberSaveable { mutableStateOf (false) }
@@ -387,7 +447,7 @@ private fun SetItem(
 
     Row (
         modifier = Modifier
-            .padding(8.dp)
+            .padding(horizontal = 8.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
             ) {
@@ -407,7 +467,9 @@ private fun SetItem(
             modifier = Modifier
                 .weight(1f),
             isNumeric = true,
-            isEnabled = !recordIsSaved
+            isEnabled = !recordIsSaved,
+            backgroundColor = MaterialTheme.colors.background,
+            textColor = MaterialTheme.colors.onPrimary
         )
 
         StandardTextField(
@@ -416,7 +478,9 @@ private fun SetItem(
             modifier = Modifier
                 .weight(1f),
             isNumeric = true,
-            isEnabled = !recordIsSaved
+            isEnabled = !recordIsSaved,
+            backgroundColor = MaterialTheme.colors.background,
+            textColor = MaterialTheme.colors.onPrimary
         )
 
         Checkbox(
@@ -428,7 +492,7 @@ private fun SetItem(
                 }
                 onChangeRecordState(currentRecord.value)
             },
-            colors = CheckboxDefaults.colors(checkedColor = Color.Green),
+            colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.secondary),
             modifier = Modifier.weight(0.5f)
         )
     }
@@ -442,7 +506,10 @@ private fun AddSetButton(
     sessionPosition: Int,
     onExerciseAdded: (Record) -> Unit
 ) {
-    StandardOutlinedButton (
+    StandardButton (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
         onClick = { onExerciseAdded(
             createNewRecord(
                 sessionId = sessionId,
@@ -453,8 +520,8 @@ private fun AddSetButton(
             )
         ) },
         text = stringResource(R.string.add_set_button),
-        modifier = Modifier
-            .fillMaxWidth()
+        backgroundColor = MaterialTheme.colors.secondaryVariant,
+        textColor = MaterialTheme.colors.onSecondary
     )
 }
 
@@ -462,12 +529,14 @@ private fun AddSetButton(
 private fun AddExerciseButton(
     selectExercise: () -> Unit
 ) {
-    StandardOutlinedButton(
-        onClick = { selectExercise() },
-        text = stringResource(R.string.add_exercise_button),
+    StandardButton(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = 12.dp),
+        onClick = { selectExercise() },
+        text = stringResource(R.string.add_exercise_button),
+        backgroundColor = MaterialTheme.colors.secondaryVariant,
+        textColor = MaterialTheme.colors.onSecondary
     )
 }
 
@@ -476,13 +545,14 @@ private fun CancelButton (
     viewModel: SessionViewModel,
     navController: NavController
 ) {
-    StandardOutlinedButton(
-        onClick = { cancelAndDelete(viewModel, navController) },
-        text = stringResource(R.string.cancel_session_button),
+    StandardButton(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        textColor = Color.Red
+            .padding(horizontal = 12.dp),
+        onClick = { cancelAndDelete(viewModel, navController) },
+        text = stringResource(R.string.cancel_session_button),
+        backgroundColor = Color.Red,
+        textColor = Color.White
     )
 }
 
@@ -514,11 +584,11 @@ private fun SaveSessionDialog (
     Dialog (onDismissRequest = { onDismissRequest() } ) {
         Card (
             backgroundColor = MaterialTheme.colors.primary,
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(8.dp)
                 ) {
             if (viewModel.newRecords.isNotEmpty()) {
                 Column (modifier = Modifier.padding(16.dp)) {
-                    Text (
+                    Text(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(4.dp),
@@ -528,7 +598,7 @@ private fun SaveSessionDialog (
                         textAlign = TextAlign.Center
                     )
 
-                    Text (
+                    Text(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(4.dp),
@@ -538,42 +608,26 @@ private fun SaveSessionDialog (
                         textAlign = TextAlign.Center
                     )
 
-                    Row (
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton (
-                            onClick = { onDismissRequest() },
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.cancel_button),
-                                color = MaterialTheme.colors.secondary
-                            )
-                        }
-
-                        TextButton (
-                            onClick = { onSessionSaved() },
-                            modifier = Modifier.padding(8.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.confirm_button),
-                                color = MaterialTheme.colors.secondary
-                            )
-                        }
-                    }
+                    AlertDialogButtons(
+                        onCancel = { onDismissRequest() },
+                        onConfirm = { onSessionSaved() }
+                    )
                 }
+
             } else {
-                Column {
+                Column (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                     Text (
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(4.dp),
                         text = stringResource(R.string.save_session_error_message),
-                        style = MaterialTheme.typography.body2,
+                        style = MaterialTheme.typography.body1,
                         color = MaterialTheme.colors.onPrimary,
                         textAlign = TextAlign.Center
                     )
@@ -591,6 +645,37 @@ private fun SaveSessionDialog (
             }
         }
     }
+}
+
+@Composable
+private fun DeleteExerciseDialog (
+    onDismissRequest: () -> Unit,
+    onExerciseDeleted: () -> Unit,
+) {
+    AlertDialog(
+        title = {
+            Text (
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.delete_exercise_dialog_title),
+                textAlign = TextAlign.Center
+            )
+        },
+        text = {
+            Text (
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.delete_item_dialog_text),
+                textAlign = TextAlign.Center
+            )
+        },
+        shape = RoundedCornerShape(8.dp),
+        onDismissRequest = { onDismissRequest() },
+        buttons = {
+            AlertDialogButtons(
+                onCancel = { onDismissRequest() },
+                onConfirm = { onExerciseDeleted() }
+            )
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -688,12 +773,20 @@ private fun createNewRecord(
 }
 
 private fun deleteSetInPosition(
-    viewModel: SessionViewModel,
-    position: Int
-) {
+    viewModel: SessionViewModel
+): List<Record> {
+
     viewModel.newRecords.forEach { record ->
-        if (record.sessionPosition == position) {
+        if (record.sessionPosition == viewModel.positionBeingModified) {
             viewModel.newRecords -= record
         }
+
+        if (record.sessionPosition > viewModel.positionBeingModified!!) {
+            viewModel.newRecords -= record
+            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition - 1)
+        }
     }
+    viewModel.positionBeingModified = null
+
+    return viewModel.newRecords
 }

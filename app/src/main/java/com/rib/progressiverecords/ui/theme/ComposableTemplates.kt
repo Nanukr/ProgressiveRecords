@@ -30,13 +30,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.rib.progressiverecords.R
 
+//Buttons
 @Composable
 fun StandardOutlinedButton (
     onClick: () -> Unit,
@@ -80,6 +80,7 @@ fun StandardButton (
     }
 }
 
+//TextFields
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StandardTextField (
@@ -89,7 +90,9 @@ fun StandardTextField (
     isNumeric: Boolean,
     isEnabled: Boolean = true,
     readOnly: Boolean = false,
-    textAlign: TextAlign = TextAlign.Center
+    textAlign: TextAlign = TextAlign.Center,
+    backgroundColor: Color = MaterialTheme.colors.primary,
+    textColor: Color = MaterialTheme.colors.onPrimary
 ) {
     var textFieldValue by rememberSaveable { mutableStateOf(entryValue) }
 
@@ -108,9 +111,9 @@ fun StandardTextField (
         enabled = isEnabled,
         readOnly = readOnly,
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MaterialTheme.colors.primary,
-            textColor = MaterialTheme.colors.onPrimary,
-            cursorColor = MaterialTheme.colors.onPrimary,
+            backgroundColor = backgroundColor,
+            textColor = textColor,
+            cursorColor = textColor,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent
@@ -127,10 +130,91 @@ fun StandardTextField (
                 keyboardController?.hide()
                 focusManager.clearFocus()
             }
-        ),
+        )
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun SearchBar(
+    modifier: Modifier = Modifier,
+    hint: String = "Search...",
+    onSearch: (String) -> Unit
+) {
+    var text by rememberSaveable { mutableStateOf("") }
+    var isTrailingDisplayed by rememberSaveable { mutableStateOf(false) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    Box (modifier = modifier) {
+        TextField(
+            value = text,
+            onValueChange = {
+                text = it
+                onSearch(it)
+            },
+            maxLines = 1,
+            singleLine = true,
+            textStyle = TextStyle(color = MaterialTheme.colors.onPrimary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(5.dp, CircleShape)
+                .background(MaterialTheme.colors.primary)
+                .padding(horizontal = 8.dp)
+                .onFocusChanged {
+                    isTrailingDisplayed = it.isFocused
+                }
+            ,
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.primary,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = MaterialTheme.colors.onPrimary
+            ),
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Search
+            ),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    isTrailingDisplayed = false
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
+            ),
+            label = {
+                Text(
+                    text = hint,
+                    color = Color.LightGray
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_search),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
+                )
+            },
+            trailingIcon = {
+                if (isTrailingDisplayed) {
+                    Icon(
+                        modifier = Modifier
+                            .clickable{
+                                text = ""
+                                onSearch(text)
+                            },
+                        painter = painterResource(R.drawable.ic_close),
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.onPrimary
+                    )
+                }
+            }
+        )
+    }
+}
+
+
+//Dialogs
 @Composable
 fun SingleOptionChoosingDialog(
     options: List<String>,
@@ -261,6 +345,8 @@ fun MultipleOptionsChoosingDialog(
     }
 }
 
+
+//Dialog content
 @Composable
 fun MultipleOptionsChoosingColumn(
     options: List<String>,
@@ -314,85 +400,41 @@ fun MultipleOptionsChoosingColumn(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SearchBar(
-    modifier: Modifier = Modifier,
-    hint: String = "Search...",
-    onSearch: (String) -> Unit
+fun AlertDialogButtons(
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit
 ) {
-    var text by rememberSaveable { mutableStateOf("") }
-    var isTrailingDisplayed by rememberSaveable { mutableStateOf(false) }
+    Row (
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextButton(
+            onClick = { onCancel() },
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            androidx.compose.material3.Text(
+                text = stringResource(R.string.cancel_button),
+                color = MaterialTheme.colors.secondary
+            )
+        }
 
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-
-    Box (modifier = modifier) {
-        TextField(
-            value = text,
-            onValueChange = {
-                text = it
-                onSearch(it)
-            },
-            maxLines = 1,
-            singleLine = true,
-            textStyle = TextStyle(color = MaterialTheme.colors.onPrimary),
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(5.dp, CircleShape)
-                .background(MaterialTheme.colors.primary)
-                .padding(horizontal = 8.dp)
-                .onFocusChanged {
-                    isTrailingDisplayed = it.isFocused
-                }
-            ,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.primary,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = MaterialTheme.colors.onPrimary
-            ),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    isTrailingDisplayed = false
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
-                }
-            ),
-            label = {
-                Text(
-                    text = hint,
-                    color = Color.LightGray
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.ic_search),
-                    contentDescription = "",
-                    tint = MaterialTheme.colors.onPrimary
-                )
-            },
-            trailingIcon = {
-                if (isTrailingDisplayed) {
-                    Icon(
-                        modifier = Modifier
-                            .clickable{
-                                text = ""
-                                onSearch(text)
-                            },
-                        painter = painterResource(R.drawable.ic_close),
-                        contentDescription = "",
-                        tint = MaterialTheme.colors.onPrimary
-                    )
-                }
-            }
-        )
+        TextButton(
+            onClick = { onConfirm() },
+            modifier = Modifier.padding(8.dp)
+        ) {
+            androidx.compose.material3.Text(
+                text = stringResource(R.string.confirm_button),
+                color = MaterialTheme.colors.secondary
+            )
+        }
     }
 }
 
+//Previews
 @Composable
 @Preview
 private fun StandardOutlinedButtonPreview() {

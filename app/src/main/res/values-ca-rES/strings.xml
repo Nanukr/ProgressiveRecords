@@ -20,6 +20,7 @@
     <string name="save_session_icon_description">Sortir i guardar</string>
     <string name="new_session_name">Nova sessió</string>
     <string name="change_exercise_button">Canviar exercici</string>
+    <string name="delete_exercise_dialog_title">Eliminar exercici?</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Editar sessió actual</string>
@@ -28,7 +29,6 @@
     <string name="reps_label">reps</string>
     <string name="delete_session_button_caption">Eliminar sessió</string>
     <string name="delete_session_dialog_top_message">Eliminar sessió?</string>
-    <string name="delete_session_dialog_bottom_message">Aquesta acció no es pot desfer</string>
 
     //Exercise list
     <string name="empty_exercise_list_message">No s\'han trobat exercicis</string>
@@ -37,7 +37,7 @@
     <string name="confirm_exercise_deletion_message_top">Eliminar el següent exercici: %s?</string>
     <string name="confirm_exercise_deletion_message_bottom">No s\'eliminarà cap registre que contingui aquest exercici</string>
     <string name="create_exercise_icon_description">Crear exercici</string>
-    <string name="add_exercises_to_session_button">Afegir exercicis</string>
+    <string name="add_exercises_to_session_button">Afegir</string>
     <string name="search_exercise_bar_hint">Buscar exercici…</string>
 
     //Exercise creation
@@ -102,5 +102,6 @@
     //Miscellaneous
     <string name="cancel_button">Cancel·lar</string>
     <string name="confirm_button">Confirmar</string>
+    <string name="delete_item_dialog_text">Aquesta acció no es pot desfer</string>
 
 </resources>

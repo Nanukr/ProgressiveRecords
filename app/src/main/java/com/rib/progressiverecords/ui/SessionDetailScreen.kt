@@ -276,7 +276,7 @@ private fun DeleteSessionDialog(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        text = stringResource(R.string.delete_session_dialog_bottom_message),
+                        text = stringResource(R.string.delete_item_dialog_text),
                         color = MaterialTheme.colors.onPrimary,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.body2
