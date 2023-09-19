@@ -388,9 +388,7 @@ private fun SelectButtons(
             modifier = Modifier
                 .weight(1f),
             text = stringResource(R.string.add_exercises_to_session_button),
-            onClick = { onAddExercises() },
-            backgroundColor = MaterialTheme.colors.secondaryVariant,
-            textColor = MaterialTheme.colors.onSecondary
+            onClick = { onAddExercises() }
         )
     }
 }

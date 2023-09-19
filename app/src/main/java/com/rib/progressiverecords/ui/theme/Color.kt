@@ -12,4 +12,4 @@ val Gray900 = Color(0xFF212121)
 
 //Secondary
 val Orange700 = Color(0xFFF57C00)
-val Orange200 = Color(0xFFFFCC80)
+val Orange300 = Color(0xFFFFB74D)

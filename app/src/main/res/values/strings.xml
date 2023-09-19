@@ -20,6 +20,8 @@
     <string name="new_session_name">New session</string>
     <string name="change_exercise_button">Change exercise</string>
     <string name="delete_exercise_dialog_title">Delete exercise?</string>
+    <string name="move_exercise_up_button">Move up</string>
+    <string name="move_exercise_down_button">Move down</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Edit current session</string>

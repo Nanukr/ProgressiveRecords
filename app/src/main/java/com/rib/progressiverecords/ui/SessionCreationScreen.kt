@@ -104,7 +104,15 @@ fun SessionCreationScreen(
                 viewModel.createdSession = session
             },
             selectExercise = { addingExercise.value = true },
-            onDeleteExercise = { deletingExercise = true }
+            onDeleteExercise = { deletingExercise = true },
+            onMoveExerciseUp = {
+                viewModel.positionBeingModified = it
+                records = moveSetInPositionUp(viewModel = viewModel)
+            },
+            onMoveExerciseDown = {
+                viewModel.positionBeingModified = it
+                records = moveSetInPositionDown(viewModel = viewModel)
+            }
         )
 
         if (changingDate.value) {
@@ -191,6 +199,8 @@ private fun SetList(
     onOpenDateDialog: () -> Unit,
     selectExercise: () -> Unit,
     onDeleteExercise: () -> Unit,
+    onMoveExerciseUp: (Int) -> Unit,
+    onMoveExerciseDown: (Int) -> Unit,
     viewModel: SessionViewModel,
     navController: NavController
 ) {
@@ -218,7 +228,9 @@ private fun SetList(
                             onDeleteExercise = {
                                 viewModel.positionBeingModified = it
                                 onDeleteExercise()
-                            }
+                            },
+                            onMoveExerciseUp = { onMoveExerciseUp(it) },
+                            onMoveExerciseDown = { onMoveExerciseDown(it) }
                         )
                     }
                 }
@@ -280,7 +292,9 @@ private fun ExerciseHeader (
     exerciseName: String,
     sessionPosition: String,
     onChangeExercise: () -> Unit,
-    onDeleteExercise: () -> Unit
+    onDeleteExercise: () -> Unit,
+    onMoveExerciseUp: () -> Unit,
+    onMoveExerciseDown: () -> Unit
 ) {
     var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
@@ -313,10 +327,39 @@ private fun ExerciseHeader (
                         contentDescription = ""
                     )
                 }
+
                 DropdownMenu(
                     expanded = dropdownMenuExpanded,
                     onDismissRequest = { dropdownMenuExpanded = false }
                 ) {
+                    DropdownMenuItem(onClick = {
+                        onMoveExerciseUp()
+                        dropdownMenuExpanded = false
+                    }) {
+                        Icon(
+                            modifier = Modifier.padding(4.dp),
+                            painter = painterResource(id = R.drawable.ic_arrow_up),
+                            contentDescription = "",
+                            tint = MaterialTheme.colors.onPrimary
+                        )
+
+                        Text(stringResource(R.string.move_exercise_up_button))
+                    }
+
+                    DropdownMenuItem(onClick = {
+                        onMoveExerciseDown()
+                        dropdownMenuExpanded = false
+                    }) {
+                        Icon(
+                            modifier = Modifier.padding(4.dp),
+                            painter = painterResource(id = R.drawable.ic_arrow_down),
+                            contentDescription = "",
+                            tint = MaterialTheme.colors.onPrimary
+                        )
+
+                        Text(stringResource(R.string.move_exercise_down_button))
+                    }
+
                     DropdownMenuItem(onClick = {
                         onChangeExercise()
                         dropdownMenuExpanded = false
@@ -391,7 +434,9 @@ private fun ExerciseSets(
     sets: List<Record>,
     sessionId: UUID,
     onUpdateRecords: (Record) -> Unit,
-    onDeleteExercise: (Int) -> Unit
+    onDeleteExercise: (Int) -> Unit,
+    onMoveExerciseUp: (Int) -> Unit,
+    onMoveExerciseDown: (Int) -> Unit
 ) {
     val exerciseName = sets[0].exerciseName
     Column (
@@ -404,7 +449,9 @@ private fun ExerciseSets(
             exerciseName = exerciseName,
             sessionPosition = sets[0].sessionPosition.toString(),
             onChangeExercise = { /*TODO*/ },
-            onDeleteExercise = { onDeleteExercise(sets[0].sessionPosition) }
+            onDeleteExercise = { onDeleteExercise(sets[0].sessionPosition) },
+            onMoveExerciseUp = { onMoveExerciseUp(sets[0].sessionPosition) },
+            onMoveExerciseDown = { onMoveExerciseDown(sets[0].sessionPosition) }
         )
 
         Divider(modifier = Modifier.padding(8.dp))
@@ -427,8 +474,9 @@ private fun ExerciseSets(
             sessionId = sessionId,
             previousSet = sets.last().setNumber,
             exerciseName = exerciseName,
-            onExerciseAdded = { onUpdateRecords(it) },
-            sessionPosition = sets[0].sessionPosition
+            sessionPosition = sets[0].sessionPosition,
+            previousCategory = getCategoryWithRecord(sets[0]),
+            onExerciseAdded = { onUpdateRecords(it) }
         )
     }
 }
@@ -441,7 +489,7 @@ private fun SetItem(
 ) {
     val currentRecord = remember { mutableStateOf(record) }
 
-    var repetitions by rememberSaveable{ mutableStateOf(record.repetitions.toString()) }
+    var repetitions by rememberSaveable { mutableStateOf(record.repetitions.toString()) }
 
     var weight by rememberSaveable { mutableStateOf(record.weight.toString()) }
 
@@ -498,12 +546,14 @@ private fun SetItem(
     }
 }
 
+//Buttons
 @Composable
 private fun AddSetButton(
     sessionId: UUID,
     previousSet: Int,
     exerciseName: String,
     sessionPosition: Int,
+    previousCategory: String,
     onExerciseAdded: (Record) -> Unit
 ) {
     StandardButton (
@@ -516,12 +566,10 @@ private fun AddSetButton(
                 previousSet = previousSet,
                 exerciseName = exerciseName,
                 sessionPosition = sessionPosition,
-                category = "standard"
+                category = previousCategory
             )
         ) },
-        text = stringResource(R.string.add_set_button),
-        backgroundColor = MaterialTheme.colors.secondaryVariant,
-        textColor = MaterialTheme.colors.onSecondary
+        text = stringResource(R.string.add_set_button)
     )
 }
 
@@ -534,9 +582,7 @@ private fun AddExerciseButton(
             .fillMaxWidth()
             .padding(horizontal = 12.dp),
         onClick = { selectExercise() },
-        text = stringResource(R.string.add_exercise_button),
-        backgroundColor = MaterialTheme.colors.secondaryVariant,
-        textColor = MaterialTheme.colors.onSecondary
+        text = stringResource(R.string.add_exercise_button)
     )
 }
 
@@ -551,11 +597,12 @@ private fun CancelButton (
             .padding(horizontal = 12.dp),
         onClick = { cancelAndDelete(viewModel, navController) },
         text = stringResource(R.string.cancel_session_button),
-        backgroundColor = Color.Red,
-        textColor = Color.White
+        backgroundColor = Color.LightGray,
+        textColor = Color.Black
     )
 }
 
+//Dialogs
 @Composable
 private fun SelectExerciseDialog (
     onDismissRequest: () -> Unit,
@@ -789,4 +836,52 @@ private fun deleteSetInPosition(
     viewModel.positionBeingModified = null
 
     return viewModel.newRecords
+}
+
+private fun moveSetInPositionUp(
+    viewModel: SessionViewModel
+): List<Record> {
+
+    viewModel.newRecords.forEach { record ->
+        if (record.sessionPosition == viewModel.positionBeingModified) {
+            viewModel.newRecords -= record
+            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition - 1)
+        } else if ((viewModel.positionBeingModified!! - record.sessionPosition) == 1) {
+            viewModel.newRecords -= record
+            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition + 1)
+        }
+    }
+
+    viewModel.positionBeingModified = null
+
+    return viewModel.newRecords
+}
+
+private fun moveSetInPositionDown(
+    viewModel: SessionViewModel
+): List<Record> {
+
+    viewModel.newRecords.forEach { record ->
+        if (record.sessionPosition == viewModel.positionBeingModified) {
+            viewModel.newRecords -= record
+            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition + 1)
+        } else if ((record.sessionPosition - viewModel.positionBeingModified!!) == 1) {
+            viewModel.newRecords -= record
+            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition - 1)
+        }
+    }
+
+    viewModel.positionBeingModified = null
+
+    return viewModel.newRecords
+}
+
+private fun getCategoryWithRecord(
+    record: Record
+): String {
+    return if (record.repetitions != null && record.weight != null) { "General" }
+    else if (record.exerciseDuration != null && record.distance != null) { "Cardio" }
+    else if (record.repetitions != null) { "Reps only" }
+    else { "Duration" }
+
 }

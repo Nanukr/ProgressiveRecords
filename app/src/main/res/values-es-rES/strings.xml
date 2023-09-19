@@ -21,6 +21,8 @@
     <string name="new_session_name">Nueva sesión</string>
     <string name="change_exercise_button">Cambiar ejercicio</string>
     <string name="delete_exercise_dialog_title">Eliminar ejercicio?</string>
+    <string name="move_exercise_up_button">Mover arriba</string>
+    <string name="move_exercise_down_button">Mover abajo</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Editar sesión actual</string>

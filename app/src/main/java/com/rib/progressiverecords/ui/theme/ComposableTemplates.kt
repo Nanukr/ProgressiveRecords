@@ -64,8 +64,8 @@ fun StandardButton (
     text: String,
     modifier: Modifier = Modifier,
     textAlign: TextAlign = TextAlign.Start,
-    backgroundColor: Color = MaterialTheme.colors.primary,
-    textColor: Color = MaterialTheme.colors.secondary
+    backgroundColor: Color = MaterialTheme.colors.secondaryVariant,
+    textColor: Color = MaterialTheme.colors.onSecondary
 ) {
     Button (
         modifier = modifier.padding(8.dp),
