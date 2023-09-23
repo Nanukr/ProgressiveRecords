@@ -1,6 +1,5 @@
 package com.rib.progressiverecords.ui
 
-import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +25,7 @@ import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
@@ -74,16 +74,19 @@ private fun SetList(
     val exerciseSetsList = ExerciseSetsList().organizeRecords(records).totalSets
 
     Column (
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(8.dp),
             ) {
         SessionHeader(
             session = session,
             onDeleteSession = { sessionBeingDeleted = true }
         )
 
-        LazyColumn {
+        LazyColumn (
+            modifier = Modifier.padding(vertical = 8.dp)
+                ) {
             items(exerciseSetsList) { set ->
-                SetItem(set = set)
+                val category = getCategoryWithRecord(set[0])
+                SetItem(set = set, category = category)
             }
         }
 
@@ -110,19 +113,24 @@ private fun SessionHeader (
 ) {
     var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
+    val date = session?.date ?: Date()
+
     Row (
+        modifier = Modifier.padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column (
+            modifier = Modifier.padding(4.dp)
+                ) {
             Text(
-                modifier = Modifier.padding(8.dp),
                 text = session?.sessionName ?: "",
                 style = MaterialTheme.typography.h6
             )
 
             Text(
-                modifier = Modifier.padding(4.dp),
-                text = DateFormat.format("dd / MMM / yyyy", session?.date ?: Date()).toString(),
+                text = SimpleDateFormat
+                    .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
+                    .format(date).toString(),
                 style = MaterialTheme.typography.body1
             )
         }
@@ -153,25 +161,47 @@ private fun SessionHeader (
 
 @Composable
 private fun SetItem (
-    set: List<Record>
+    set: List<Record>,
+    category: String
 ) {
+    var string1 = ""
+    var string2 = ""
+
+    when (category) {
+        "General" -> {
+            string1 = stringResource(R.string.weight_label)
+            string2 = stringResource(R.string.repetitions_label)
+        }
+        "Cardio" -> {
+            string1 = stringResource(R.string.distance_label)
+            string2 = stringResource(R.string.duration_label)
+        }
+        "Reps only" -> {
+            string1 = stringResource(R.string.repetitions_label)
+        }
+        "Duration" -> {
+            string1 = stringResource(R.string.duration_label)
+        }
+    }
+
     Card (
         modifier = Modifier
-            .padding(vertical = 8.dp)
+            .padding(vertical = 4.dp)
             .fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
         backgroundColor = MaterialTheme.colors.primary,
         elevation = 4.dp
             ) {
         Column (
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(8.dp)
         ) {
             Text(
+                modifier = Modifier
+                    .padding(8.dp),
                 text = "${set[0].sessionPosition}: ${set[0].exerciseName}",
                 color = MaterialTheme.colors.onBackground,
-                modifier = Modifier
-                    .padding(8.dp)
+                style = MaterialTheme.typography.h6
             )
 
             Row (
@@ -191,7 +221,7 @@ private fun SetItem (
                 )
 
                 Text(
-                    text = stringResource(R.string.weight_label),
+                    text = string1,
                     color = MaterialTheme.colors.onBackground,
                     modifier = Modifier
                         .weight(1f)
@@ -199,19 +229,42 @@ private fun SetItem (
                     textAlign = TextAlign.Center
                 )
 
-                Text(
-                    text = stringResource(R.string.repetitions_label),
-                    color = MaterialTheme.colors.onBackground,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp),
-                    textAlign = TextAlign.Center
-                )
+                if (category != "Reps only" && category != "Duration") {
+                    Text(
+                        text = string2,
+                        color = MaterialTheme.colors.onBackground,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(4.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             Divider()
 
             set.forEach { record ->
+                var value1 = ""
+
+                var value2  = ""
+
+                when (category) {
+                    "General" -> {
+                        value1 = record.weight.toString()
+                        value2 = record.repetitions.toString()
+                    }
+                    "Cardio" -> {
+                        value1 = record.distance.toString()
+                        value2 = record.exerciseDuration.toString()
+                    }
+                    "Reps only" -> {
+                        value1 = record.repetitions.toString()
+                    }
+                    "Duration" -> {
+                        value1 = record.exerciseDuration.toString()
+                    }
+                }
+
                 Row (
                     modifier = Modifier.padding(8.dp)
                 ) {
@@ -228,19 +281,21 @@ private fun SetItem (
                         modifier = Modifier
                             .padding(2.dp)
                             .weight(1f),
-                        text = record.weight.toString(),
+                        text = value1,
                         color = MaterialTheme.colors.onPrimary,
                         textAlign = TextAlign.Center
                     )
 
-                    Text(
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .weight(1f),
-                        text = "${record.repetitions} ${stringResource(R.string.reps_label)}",
-                        color = MaterialTheme.colors.onPrimary,
-                        textAlign = TextAlign.Center
-                    )
+                    if (category != "Reps only" && category != "Duration") {
+                        Text(
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .weight(1f),
+                            text = value2,
+                            color = MaterialTheme.colors.onPrimary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }

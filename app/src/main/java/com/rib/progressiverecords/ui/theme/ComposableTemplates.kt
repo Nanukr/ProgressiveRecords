@@ -213,7 +213,6 @@ fun SearchBar(
     }
 }
 
-
 //Dialogs
 @Composable
 fun SingleOptionChoosingDialog(

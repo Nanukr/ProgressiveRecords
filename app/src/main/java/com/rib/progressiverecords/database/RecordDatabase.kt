@@ -10,7 +10,7 @@ import com.rib.progressiverecords.model.*
 
 @Database(
     entities = [Session::class, Record::class, Exercise::class, ExerciseSecMuscleCrossRef::class, Category::class, Muscle::class],
-    version = 5,
+    version = 6,
     autoMigrations = [
         AutoMigration(from = 2, to = 3)
     ]
@@ -181,5 +181,36 @@ val migration_4_5 = object: Migration(4, 5) {
         database.execSQL("DROP TABLE Exercise")
 
         database.execSQL("ALTER TABLE UpdatedExercise RENAME TO Exercise")
+    }
+}
+
+val migration_5_6 = object: Migration(5, 6) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL(
+            "CREATE TABLE IF NOT EXISTS UpdatedRecord (" +
+                    "id BLOB NOT NULL PRIMARY KEY," +
+                    "sessionId BLOB NOT NULL," +
+                    "exerciseName TEXT NOT NULL," +
+                    "sessionPosition INTEGER NOT NULL, " +
+                    "setNumber INTEGER NOT NULL, " +
+                    "repetitions INTEGER, " +
+                    "weight REAL, " +
+                    "exerciseDuration REAL, " +
+                    "distance REAL" +
+                    ")"
+        )
+
+        database.execSQL(
+            "INSERT INTO UpdatedRecord (" +
+                    "id, sessionId, exerciseName, sessionPosition, setNumber, repetitions, weight, exerciseDuration, distance" +
+                    ") " +
+                    "SELECT " +
+                    "id, sessionId, exerciseName, sessionPosition, setNumber, repetitions, weight, COALESCE(NULLIF(exerciseDuration, 0.0), NULL), distance" +
+                    " FROM Record"
+        )
+
+        database.execSQL("DROP TABLE Record")
+
+        database.execSQL("ALTER TABLE UpdatedRecord RENAME TO Record")
     }
 }

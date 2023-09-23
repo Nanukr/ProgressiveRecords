@@ -13,6 +13,6 @@ data class Record(
     var setNumber: Int,
     var repetitions: Int?,
     var weight: Float?,
-    var exerciseDuration: TimeLength?,
+    var exerciseDuration: Float?,
     var distance: Float?
 )

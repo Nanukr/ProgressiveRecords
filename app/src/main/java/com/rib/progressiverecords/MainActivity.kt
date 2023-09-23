@@ -16,6 +16,7 @@ import com.rib.progressiverecords.ui.theme.ProgressiveRecordsTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(R.style.Theme_ProgressiveRecords)
         setContent {
             ProgressiveRecordsTheme {
                 Surface(

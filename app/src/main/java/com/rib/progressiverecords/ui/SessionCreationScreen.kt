@@ -1,6 +1,7 @@
 package com.rib.progressiverecords.ui
 
 import android.text.format.DateFormat
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -43,6 +44,7 @@ import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.TimeLength
 import com.rib.progressiverecords.ui.theme.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
@@ -281,7 +283,9 @@ private fun SessionNameAndDate (
 
         StandardButton(
             onClick = { onOpenDateDialog() },
-            text = DateFormat.format("dd / MMM / yyyy", session.date).toString(),
+            text = SimpleDateFormat
+                .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
+                .format(session.date).toString(),
             textAlign = TextAlign.Right
         )
     }
@@ -291,6 +295,7 @@ private fun SessionNameAndDate (
 private fun ExerciseHeader (
     exerciseName: String,
     sessionPosition: String,
+    category: String,
     onChangeExercise: () -> Unit,
     onDeleteExercise: () -> Unit,
     onMoveExerciseUp: () -> Unit,
@@ -390,6 +395,26 @@ private fun ExerciseHeader (
                 }
             }
         }
+        var string1 = ""
+
+        var string2 = ""
+
+        when (category) {
+            "General" -> {
+                string1 = stringResource(R.string.weight_label)
+                string2 = stringResource(R.string.repetitions_label)
+            }
+            "Cardio" -> {
+                string1 = stringResource(R.string.distance_label)
+                string2 = stringResource(R.string.duration_label)
+            }
+            "Reps only" -> {
+                string1 = stringResource(R.string.repetitions_label)
+            }
+            "Duration" -> {
+                string1 = stringResource(R.string.duration_label)
+            }
+        }
 
         Row (
             modifier = Modifier
@@ -407,7 +432,7 @@ private fun ExerciseHeader (
             )
 
             Text (
-                text = stringResource(R.string.weight_label),
+                text = string1,
                 color = MaterialTheme.colors.onBackground,
                 modifier = Modifier
                     .weight(1f)
@@ -415,14 +440,16 @@ private fun ExerciseHeader (
                 textAlign = TextAlign.Center
             )
 
-            Text(
-                text = stringResource(R.string.repetitions_label),
-                color = MaterialTheme.colors.onBackground,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(4.dp),
-                textAlign = TextAlign.Center
-            )
+            if (category != "Reps only" && category != "Duration") {
+                Text(
+                    text = string2,
+                    color = MaterialTheme.colors.onBackground,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(4.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
 
             Spacer(modifier = Modifier.weight(0.5f))
         }
@@ -439,6 +466,9 @@ private fun ExerciseSets(
     onMoveExerciseDown: (Int) -> Unit
 ) {
     val exerciseName = sets[0].exerciseName
+
+    val category = getCategoryWithRecord(sets[0])
+
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -448,6 +478,7 @@ private fun ExerciseSets(
         ExerciseHeader(
             exerciseName = exerciseName,
             sessionPosition = sets[0].sessionPosition.toString(),
+            category = category,
             onChangeExercise = { /*TODO*/ },
             onDeleteExercise = { onDeleteExercise(sets[0].sessionPosition) },
             onMoveExerciseUp = { onMoveExerciseUp(sets[0].sessionPosition) },
@@ -460,6 +491,7 @@ private fun ExerciseSets(
             val recordIsSaved = rememberSaveable { mutableStateOf (false) }
             SetItem(
                 record = record,
+                category = category,
                 onChangeRecordState = {
                     recordIsSaved.value = ! recordIsSaved.value
                     if (recordIsSaved.value) {
@@ -484,14 +516,35 @@ private fun ExerciseSets(
 @Composable
 private fun SetItem(
     record: Record,
+    category: String,
     onChangeRecordState: (Record) -> Unit,
     recordIsSaved: Boolean
 ) {
+    var default1 = ""
+    var default2 = ""
+
+    when (category) {
+        "General" -> {
+            default1 = record.weight.toString()
+            default2 = record.repetitions.toString()
+        }
+        "Cardio" -> {
+            default1 = record.distance.toString()
+            default2 = record.exerciseDuration.toString()
+        }
+        "Reps only" -> {
+            default1 = record.repetitions.toString()
+        }
+        "Duration" -> {
+            default2 = record.exerciseDuration.toString()
+        }
+    }
+
     val currentRecord = remember { mutableStateOf(record) }
 
-    var repetitions by rememberSaveable { mutableStateOf(record.repetitions.toString()) }
+    var value1 by rememberSaveable { mutableStateOf(default1) }
 
-    var weight by rememberSaveable { mutableStateOf(record.weight.toString()) }
+    var value2 by rememberSaveable { mutableStateOf(default2) }
 
     Row (
         modifier = Modifier
@@ -509,36 +562,55 @@ private fun SetItem(
             textAlign = TextAlign.Center,
         )
 
-        StandardTextField(
-            entryValue = weight,
-            onValueChange = { weight = it },
-            modifier = Modifier
-                .weight(1f),
-            isNumeric = true,
-            isEnabled = !recordIsSaved,
-            backgroundColor = MaterialTheme.colors.background,
-            textColor = MaterialTheme.colors.onPrimary
-        )
+        if (category != "Duration") {
+            StandardTextField(
+                entryValue = value1,
+                onValueChange = { value1 = it },
+                modifier = Modifier
+                    .weight(1f),
+                isNumeric = true,
+                isEnabled = !recordIsSaved,
+                backgroundColor = MaterialTheme.colors.background,
+                textColor = MaterialTheme.colors.onPrimary
+            )
+        }
 
-        StandardTextField(
-            entryValue = repetitions,
-            onValueChange = { repetitions = it },
-            modifier = Modifier
-                .weight(1f),
-            isNumeric = true,
-            isEnabled = !recordIsSaved,
-            backgroundColor = MaterialTheme.colors.background,
-            textColor = MaterialTheme.colors.onPrimary
-        )
+        if (category != "Reps only") {
+            StandardTextField(
+                entryValue = value2,
+                onValueChange = { value2 = it },
+                modifier = Modifier
+                    .weight(1f),
+                isNumeric = true,
+                isEnabled = !recordIsSaved,
+                backgroundColor = MaterialTheme.colors.background,
+                textColor = MaterialTheme.colors.onPrimary
+            )
+        }
 
         Checkbox(
             checked = recordIsSaved,
             onCheckedChange = {
                 if (!recordIsSaved) {
-                    currentRecord.value.weight = weight.toFloat()
-                    currentRecord.value.repetitions = repetitions.toInt()
+                    when (category) {
+                        "General" -> {
+                            currentRecord.value.weight = value1.toFloat()
+                            currentRecord.value.repetitions = value2.toInt()
+                        }
+                        "Cardio" -> {
+                            currentRecord.value.distance = value1.toFloat()
+                            currentRecord.value.exerciseDuration = value2.toFloat()
+                        }
+                        "Reps only" -> {
+                            currentRecord.value.repetitions = value1.toInt()
+                        }
+                        "Duration" -> {
+                            currentRecord.value.exerciseDuration = value2.toFloat()
+                        }
+                    }
                 }
                 onChangeRecordState(currentRecord.value)
+                Log.d("Creation", record.toString())
             },
             colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.secondary),
             modifier = Modifier.weight(0.5f)
@@ -803,7 +875,7 @@ private fun createNewRecord(
 ): Record {
     val reps = if (category != "Duration" && category != "Cardio") { 0 } else { null }
     val weight = if (category != "Reps Only" && category != "Duration" && category != "Cardio") { 0f } else { null }
-    val duration = if (category == "Duration" || category == "Cardio") { TimeLength(0, 0, 0) } else { null }
+    val duration = if (category == "Duration" || category == "Cardio") { 0.0f } else { null }
     val distance = if (category == "Cardio") { 0.0f } else { null }
 
     return Record(
@@ -876,7 +948,7 @@ private fun moveSetInPositionDown(
     return viewModel.newRecords
 }
 
-private fun getCategoryWithRecord(
+fun getCategoryWithRecord(
     record: Record
 ): String {
     return if (record.repetitions != null && record.weight != null) { "General" }

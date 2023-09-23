@@ -21,6 +21,8 @@ import com.rib.progressiverecords.R
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.relations.SessionWithRecords
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun SessionListScreen(
@@ -119,7 +121,9 @@ private fun SessionItem(
 
                 Text(
                     modifier = Modifier.padding(8.dp),
-                    text = DateFormat.format("dd / MMM / yyyy", session.session.date).toString(),
+                    text = SimpleDateFormat
+                        .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
+                        .format(session.session.date).toString(),
                     style = MaterialTheme.typography.body1
                 )
             }
@@ -140,7 +144,7 @@ private fun SessionItem(
                         Spacer(modifier = Modifier.weight(1f))
 
                         Text(
-                            text = stringResource(R.string.session_list_exercise_item, lastSet.setNumber),
+                            text = "x ${lastSet.setNumber}",
                             style = MaterialTheme.typography.body1,
                             color = MaterialTheme.colors.onPrimary,
                             modifier = Modifier.padding(4.dp)

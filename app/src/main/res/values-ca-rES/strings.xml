@@ -10,6 +10,8 @@
     <string name="set_label">Set</string>
     <string name="repetitions_label">Repeticions</string>
     <string name="weight_label">Pes</string>
+    <string name="duration_label">Duració (min)</string>
+    <string name="distance_label">Distància (km)</string>
     <string name="finish_set_icon_description">Acabar set</string>
     <string name="add_set_button">Afegir set</string>
     <string name="add_exercise_button">Afegir exercici</string>
@@ -27,7 +29,6 @@
     //Session detail
     <string name="edit_detailed_session_icon_description">Editar sessió actual</string>
     <string name="back_button_icon_description">Retrocedir</string>
-    <string name="session_list_exercise_item">x %s reps</string>
     <string name="reps_label">reps</string>
     <string name="delete_session_button_caption">Eliminar sessió</string>
     <string name="delete_session_dialog_top_message">Eliminar sessió?</string>
