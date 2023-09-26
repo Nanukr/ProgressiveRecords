@@ -26,6 +26,8 @@ class SessionViewModel : ViewModel() {
 
     var positionBeingModified: Int? = null
 
+    var checkedRecords: List<Record>? = null
+
     init {
         viewModelScope.launch {
             recordRepository.getSessions().collect {

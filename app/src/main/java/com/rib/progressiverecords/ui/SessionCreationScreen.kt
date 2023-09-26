@@ -1,7 +1,5 @@
 package com.rib.progressiverecords.ui
 
-import android.text.format.DateFormat
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -41,7 +39,6 @@ import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
-import com.rib.progressiverecords.model.TimeLength
 import com.rib.progressiverecords.ui.theme.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -74,6 +71,10 @@ fun SessionCreationScreen(
     )
 
     val exerciseSetsList = ExerciseSetsList().organizeRecords(records)
+
+    if (viewModel.checkedRecords == null) {
+        viewModel.checkedRecords = emptyList()
+    }
 
     Scaffold (
         topBar = { TopBar(
@@ -109,11 +110,11 @@ fun SessionCreationScreen(
             onDeleteExercise = { deletingExercise = true },
             onMoveExerciseUp = {
                 viewModel.positionBeingModified = it
-                records = moveSetInPositionUp(viewModel = viewModel)
+                records = moveSetInPositionBefore(viewModel = viewModel)
             },
             onMoveExerciseDown = {
                 viewModel.positionBeingModified = it
-                records = moveSetInPositionDown(viewModel = viewModel)
+                records = moveSetInPositionAfter(viewModel = viewModel)
             }
         )
 
@@ -140,7 +141,6 @@ fun SessionCreationScreen(
                     saveSessionToDb(
                         viewModel = viewModel,
                         navController = navController,
-                        records = records,
                         session = session
                     )
                     savingSession.value = false
@@ -232,7 +232,13 @@ private fun SetList(
                                 onDeleteExercise()
                             },
                             onMoveExerciseUp = { onMoveExerciseUp(it) },
-                            onMoveExerciseDown = { onMoveExerciseDown(it) }
+                            onMoveExerciseDown = { onMoveExerciseDown(it) },
+                            onAddCheckedRecord = {
+                                viewModel.checkedRecords = viewModel.checkedRecords?.plus(it)
+                            },
+                            onRemoveCheckedRecord = {
+                                viewModel.checkedRecords = viewModel.checkedRecords?.minus(it)
+                            }
                         )
                     }
                 }
@@ -463,7 +469,9 @@ private fun ExerciseSets(
     onUpdateRecords: (Record) -> Unit,
     onDeleteExercise: (Int) -> Unit,
     onMoveExerciseUp: (Int) -> Unit,
-    onMoveExerciseDown: (Int) -> Unit
+    onMoveExerciseDown: (Int) -> Unit,
+    onAddCheckedRecord: (Record) -> Unit,
+    onRemoveCheckedRecord: (Record) -> Unit
 ) {
     val exerciseName = sets[0].exerciseName
 
@@ -496,6 +504,9 @@ private fun ExerciseSets(
                     recordIsSaved.value = ! recordIsSaved.value
                     if (recordIsSaved.value) {
                         onUpdateRecords(it)
+                        onAddCheckedRecord(it)
+                    } else {
+                        onRemoveCheckedRecord(it)
                     }
                                       },
                 recordIsSaved = recordIsSaved.value
@@ -610,7 +621,6 @@ private fun SetItem(
                     }
                 }
                 onChangeRecordState(currentRecord.value)
-                Log.d("Creation", record.toString())
             },
             colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.secondary),
             modifier = Modifier.weight(0.5f)
@@ -705,7 +715,7 @@ private fun SaveSessionDialog (
             backgroundColor = MaterialTheme.colors.primary,
             shape = RoundedCornerShape(8.dp)
                 ) {
-            if (viewModel.newRecords.isNotEmpty()) {
+            if (viewModel.checkedRecords?.isNotEmpty() == true) {
                 Column (modifier = Modifier.padding(16.dp)) {
                     Text(
                         modifier = Modifier
@@ -844,18 +854,18 @@ private fun SessionDatePickerDialog(
 private fun saveSessionToDb (
     viewModel: SessionViewModel,
     navController: NavController,
-    records: List<Record>,
     session: Session
 ) {
     viewModel.viewModelScope.launch {
         viewModel.addSession(session)
 
-        records.forEach {record ->
+        reorderCheckedRecords(viewModel)
+
+        viewModel.checkedRecords!!.forEach { record ->
             viewModel.addRecord(record)
         }
     }
-    viewModel.newRecords = emptyList()
-    navController.navigate("session_list")
+    cancelAndDelete(viewModel, navController)
 }
 
 private fun cancelAndDelete(
@@ -863,6 +873,9 @@ private fun cancelAndDelete(
     navController: NavController
 ) {
     viewModel.newRecords = emptyList()
+    viewModel.createdSession = null
+    viewModel.positionBeingModified = null
+    viewModel.checkedRecords = null
     navController.navigate("session_list")
 }
 
@@ -910,10 +923,9 @@ private fun deleteSetInPosition(
     return viewModel.newRecords
 }
 
-private fun moveSetInPositionUp(
+private fun moveSetInPositionBefore(
     viewModel: SessionViewModel
 ): List<Record> {
-
     viewModel.newRecords.forEach { record ->
         if (record.sessionPosition == viewModel.positionBeingModified) {
             viewModel.newRecords -= record
@@ -923,13 +935,12 @@ private fun moveSetInPositionUp(
             viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition + 1)
         }
     }
-
     viewModel.positionBeingModified = null
 
     return viewModel.newRecords
 }
 
-private fun moveSetInPositionDown(
+private fun moveSetInPositionAfter(
     viewModel: SessionViewModel
 ): List<Record> {
 
@@ -956,4 +967,32 @@ fun getCategoryWithRecord(
     else if (record.repetitions != null) { "Reps only" }
     else { "Duration" }
 
+}
+
+fun reorderCheckedRecords(
+    viewModel: SessionViewModel
+) {
+    var previousExercise = 0
+    var previousSet = 0
+
+    viewModel.checkedRecords!!.forEach { record ->
+        if (record.sessionPosition - previousExercise > 1) {
+            while (record.sessionPosition - previousExercise != 1) {
+                record.sessionPosition -= 1
+            }
+        }
+
+        if (record.setNumber - previousSet > 1) {
+            while (record.setNumber - previousSet != 1) {
+                record.setNumber -= 1
+            }
+        }
+
+        previousSet = if (record.sessionPosition != previousExercise) {
+            0
+        } else {
+            record.setNumber
+        }
+        previousExercise = record.sessionPosition
+    }
 }
