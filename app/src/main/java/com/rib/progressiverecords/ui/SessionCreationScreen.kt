@@ -110,11 +110,31 @@ fun SessionCreationScreen(
             onDeleteExercise = { deletingExercise = true },
             onMoveExerciseUp = {
                 viewModel.positionBeingModified = it
-                records = moveSetInPositionBefore(viewModel = viewModel)
+                viewModel.newRecords = moveSetInPositionAfter(
+                    records = viewModel.newRecords,
+                    position = viewModel.positionBeingModified!!
+                )
+                records = viewModel.newRecords
+                viewModel.checkedRecords = moveSetInPositionAfter(
+                    records = viewModel.checkedRecords?: emptyList(),
+                    position = viewModel.positionBeingModified!!
+                )
+
+                viewModel.positionBeingModified = null
             },
             onMoveExerciseDown = {
                 viewModel.positionBeingModified = it
-                records = moveSetInPositionAfter(viewModel = viewModel)
+                viewModel.newRecords = moveSetInPositionAfter(
+                    records = viewModel.newRecords,
+                    position = viewModel.positionBeingModified!!
+                )
+                records = viewModel.newRecords
+                viewModel.checkedRecords = moveSetInPositionAfter(
+                    records = viewModel.checkedRecords?: emptyList(),
+                    position = viewModel.positionBeingModified!!
+                )
+
+                viewModel.positionBeingModified = null
             }
         )
 
@@ -226,6 +246,7 @@ private fun SetList(
                         ExerciseSets(
                             sets = setList,
                             sessionId = session.id,
+                            checkedRecords = viewModel.checkedRecords ?: emptyList(),
                             onUpdateRecords = { onUpdateRecords(it) },
                             onDeleteExercise = {
                                 viewModel.positionBeingModified = it
@@ -354,7 +375,10 @@ private fun ExerciseHeader (
                             tint = MaterialTheme.colors.onPrimary
                         )
 
-                        Text(stringResource(R.string.move_exercise_up_button))
+                        Text(
+                            text = stringResource(R.string.move_exercise_up_button),
+                            color = MaterialTheme.colors.onPrimary
+                        )
                     }
 
                     DropdownMenuItem(onClick = {
@@ -368,7 +392,10 @@ private fun ExerciseHeader (
                             tint = MaterialTheme.colors.onPrimary
                         )
 
-                        Text(stringResource(R.string.move_exercise_down_button))
+                        Text(
+                            text = stringResource(R.string.move_exercise_down_button),
+                            color = MaterialTheme.colors.onPrimary
+                        )
                     }
 
                     DropdownMenuItem(onClick = {
@@ -382,7 +409,10 @@ private fun ExerciseHeader (
                             tint = MaterialTheme.colors.onPrimary
                         )
 
-                        Text(stringResource(R.string.change_exercise_button))
+                        Text(
+                            text = stringResource(R.string.change_exercise_button),
+                            color = MaterialTheme.colors.onPrimary
+                        )
                     }
 
                     DropdownMenuItem(onClick = {
@@ -396,7 +426,10 @@ private fun ExerciseHeader (
                             tint = MaterialTheme.colors.onPrimary
                         )
 
-                        Text(stringResource(R.string.delete_exercise_icon_description))
+                        Text(
+                            text = stringResource(R.string.delete_exercise_icon_description),
+                            color = MaterialTheme.colors.onPrimary
+                        )
                     }
                 }
             }
@@ -466,6 +499,7 @@ private fun ExerciseHeader (
 private fun ExerciseSets(
     sets: List<Record>,
     sessionId: UUID,
+    checkedRecords: List<Record>,
     onUpdateRecords: (Record) -> Unit,
     onDeleteExercise: (Int) -> Unit,
     onMoveExerciseUp: (Int) -> Unit,
@@ -496,20 +530,27 @@ private fun ExerciseSets(
         Divider(modifier = Modifier.padding(8.dp))
 
         sets.forEach { record ->
-            val recordIsSaved = rememberSaveable { mutableStateOf (false) }
+            var recordIsSaved by rememberSaveable { mutableStateOf (checkedRecords.any {it.id == record.id}) }
+
+            LaunchedEffect(record) {
+                recordIsSaved = checkedRecords.any {it.id == record.id}
+            }
+
             SetItem(
                 record = record,
                 category = category,
+                onUpdateRecord = {
+                    onUpdateRecords(it)
+                },
                 onChangeRecordState = {
-                    recordIsSaved.value = ! recordIsSaved.value
-                    if (recordIsSaved.value) {
-                        onUpdateRecords(it)
+                    recordIsSaved = ! recordIsSaved
+                    if (recordIsSaved) {
                         onAddCheckedRecord(it)
                     } else {
                         onRemoveCheckedRecord(it)
                     }
                                       },
-                recordIsSaved = recordIsSaved.value
+                recordIsSaved = recordIsSaved
             )
         }
 
@@ -528,34 +569,33 @@ private fun ExerciseSets(
 private fun SetItem(
     record: Record,
     category: String,
+    onUpdateRecord: (Record) -> Unit,
     onChangeRecordState: (Record) -> Unit,
     recordIsSaved: Boolean
 ) {
-    var default1 = ""
-    var default2 = ""
+    var currentRecord = record
 
-    when (category) {
-        "General" -> {
-            default1 = record.weight.toString()
-            default2 = record.repetitions.toString()
-        }
-        "Cardio" -> {
-            default1 = record.distance.toString()
-            default2 = record.exerciseDuration.toString()
-        }
-        "Reps only" -> {
-            default1 = record.repetitions.toString()
-        }
-        "Duration" -> {
-            default2 = record.exerciseDuration.toString()
-        }
+    val default1 = when (category) {
+        "General" -> currentRecord.weight.toString()
+        "Cardio" -> currentRecord.distance.toString()
+        "Reps only" -> currentRecord.repetitions.toString()
+        else -> ""
     }
 
-    val currentRecord = remember { mutableStateOf(record) }
+    val default2 = when (category) {
+        "General" -> currentRecord.repetitions.toString()
+        "Cardio" -> currentRecord.exerciseDuration.toString()
+        "Duration" -> currentRecord.exerciseDuration.toString()
+        else -> ""
+    }
 
     var value1 by rememberSaveable { mutableStateOf(default1) }
-
     var value2 by rememberSaveable { mutableStateOf(default2) }
+
+    LaunchedEffect(currentRecord) {
+        value1 = default1
+        value2 = default2
+    }
 
     Row (
         modifier = Modifier
@@ -568,7 +608,7 @@ private fun SetItem(
                 .fillMaxSize()
                 .weight(0.5f)
                 .padding(4.dp),
-            text = record.setNumber.toString(),
+            text = currentRecord.setNumber.toString(),
             color = MaterialTheme.colors.onBackground,
             textAlign = TextAlign.Center,
         )
@@ -576,7 +616,16 @@ private fun SetItem(
         if (category != "Duration") {
             StandardTextField(
                 entryValue = value1,
-                onValueChange = { value1 = it },
+                onValueChange = {
+                    value1 = it
+                    currentRecord = updateRecordWithCategory(
+                        record = currentRecord,
+                        value1 = value1,
+                        value2 = value2,
+                        category = category
+                    )
+                    onUpdateRecord(currentRecord)
+                },
                 modifier = Modifier
                     .weight(1f),
                 isNumeric = true,
@@ -589,7 +638,16 @@ private fun SetItem(
         if (category != "Reps only") {
             StandardTextField(
                 entryValue = value2,
-                onValueChange = { value2 = it },
+                onValueChange = {
+                    value2 = it
+                    currentRecord = updateRecordWithCategory(
+                        record = currentRecord,
+                        value1 = value1,
+                        value2 = value2,
+                        category = category
+                    )
+                    onUpdateRecord(currentRecord)
+                },
                 modifier = Modifier
                     .weight(1f),
                 isNumeric = true,
@@ -603,24 +661,8 @@ private fun SetItem(
             checked = recordIsSaved,
             onCheckedChange = {
                 if (!recordIsSaved) {
-                    when (category) {
-                        "General" -> {
-                            currentRecord.value.weight = value1.toFloat()
-                            currentRecord.value.repetitions = value2.toInt()
-                        }
-                        "Cardio" -> {
-                            currentRecord.value.distance = value1.toFloat()
-                            currentRecord.value.exerciseDuration = value2.toFloat()
-                        }
-                        "Reps only" -> {
-                            currentRecord.value.repetitions = value1.toInt()
-                        }
-                        "Duration" -> {
-                            currentRecord.value.exerciseDuration = value2.toFloat()
-                        }
-                    }
+                    onChangeRecordState(currentRecord)
                 }
-                onChangeRecordState(currentRecord.value)
             },
             colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.secondary),
             modifier = Modifier.weight(0.5f)
@@ -864,8 +906,9 @@ private fun saveSessionToDb (
         viewModel.checkedRecords!!.forEach { record ->
             viewModel.addRecord(record)
         }
+
+        cancelAndDelete(viewModel, navController)
     }
-    cancelAndDelete(viewModel, navController)
 }
 
 private fun cancelAndDelete(
@@ -924,39 +967,49 @@ private fun deleteSetInPosition(
 }
 
 private fun moveSetInPositionBefore(
-    viewModel: SessionViewModel
+    records: List<Record>,
+    position: Int
 ): List<Record> {
-    viewModel.newRecords.forEach { record ->
-        if (record.sessionPosition == viewModel.positionBeingModified) {
-            viewModel.newRecords -= record
-            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition - 1)
-        } else if ((viewModel.positionBeingModified!! - record.sessionPosition) == 1) {
-            viewModel.newRecords -= record
-            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition + 1)
-        }
-    }
-    viewModel.positionBeingModified = null
+    val newRecords = records.toMutableList()
+    var currentPosition = 0
 
-    return viewModel.newRecords
+    records.forEach { record ->
+        if (record.sessionPosition == position) {
+            newRecords[currentPosition] = (record.copy(sessionPosition = record.sessionPosition - 1))
+        } else if ((record.sessionPosition - position) == 1) {
+            newRecords[currentPosition] = (record.copy(sessionPosition = record.sessionPosition + 1))
+        }
+
+        currentPosition ++
+    }
+
+    return newRecords.sortedWith(
+        compareBy<Record> { it.sessionPosition }
+            .thenBy { it.setNumber }
+    ).toList()
 }
 
 private fun moveSetInPositionAfter(
-    viewModel: SessionViewModel
+    records: List<Record>,
+    position: Int
 ): List<Record> {
+    val newRecords = records.toMutableList()
+    var currentPosition = 0
 
-    viewModel.newRecords.forEach { record ->
-        if (record.sessionPosition == viewModel.positionBeingModified) {
-            viewModel.newRecords -= record
-            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition + 1)
-        } else if ((record.sessionPosition - viewModel.positionBeingModified!!) == 1) {
-            viewModel.newRecords -= record
-            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition - 1)
+    records.forEach { record ->
+        if (record.sessionPosition == position) {
+            newRecords[currentPosition] = (record.copy(sessionPosition = record.sessionPosition + 1))
+        } else if ((record.sessionPosition - position) == 1) {
+            newRecords[currentPosition] = (record.copy(sessionPosition = record.sessionPosition - 1))
         }
+
+        currentPosition ++
     }
 
-    viewModel.positionBeingModified = null
-
-    return viewModel.newRecords
+    return newRecords.sortedWith(
+        compareBy<Record> { it.sessionPosition }
+            .thenBy { it.setNumber }
+    ).toList()
 }
 
 fun getCategoryWithRecord(
@@ -972,8 +1025,12 @@ fun getCategoryWithRecord(
 fun reorderCheckedRecords(
     viewModel: SessionViewModel
 ) {
-    var previousExercise = 0
-    var previousSet = 0
+    viewModel.checkedRecords = viewModel.checkedRecords?.sortedWith(
+        compareBy<Record> { it.sessionPosition }
+            .thenBy { it.setNumber }
+    )
+    var previousExercise = 1
+    var previousSet = 1
 
     viewModel.checkedRecords!!.forEach { record ->
         if (record.sessionPosition - previousExercise > 1) {
@@ -989,10 +1046,36 @@ fun reorderCheckedRecords(
         }
 
         previousSet = if (record.sessionPosition != previousExercise) {
-            0
+            1
         } else {
             record.setNumber
         }
         previousExercise = record.sessionPosition
     }
+}
+
+fun updateRecordWithCategory(
+    record: Record,
+    value1: String,
+    value2: String,
+    category: String
+): Record {
+    when (category) {
+        "General" -> {
+            record.weight = value1.toFloat()
+            record.repetitions = value2.toInt()
+        }
+        "Cardio" -> {
+            record.distance = value1.toFloat()
+            record.exerciseDuration = value2.toFloat()
+        }
+        "Reps only" -> {
+            record.repetitions = value1.toInt()
+        }
+        "Duration" -> {
+            record.exerciseDuration = value2.toFloat()
+        }
+    }
+
+    return record
 }

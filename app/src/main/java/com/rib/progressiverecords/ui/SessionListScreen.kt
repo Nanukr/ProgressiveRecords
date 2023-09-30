@@ -90,7 +90,7 @@ private fun SessionItem(
 ) {
     var records by remember { mutableStateOf((session.records)) }
     records = records.sortedWith(
-        compareBy<Record> { it.exerciseName }
+        compareBy<Record> { it.sessionPosition }
             .thenBy { it.setNumber }
     )
 
