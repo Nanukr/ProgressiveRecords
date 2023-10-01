@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.*
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -110,12 +111,12 @@ fun SessionCreationScreen(
             onDeleteExercise = { deletingExercise = true },
             onMoveExerciseUp = {
                 viewModel.positionBeingModified = it
-                viewModel.newRecords = moveSetInPositionAfter(
+                viewModel.newRecords = moveSetInPositionBefore(
                     records = viewModel.newRecords,
                     position = viewModel.positionBeingModified!!
                 )
                 records = viewModel.newRecords
-                viewModel.checkedRecords = moveSetInPositionAfter(
+                viewModel.checkedRecords = moveSetInPositionBefore(
                     records = viewModel.checkedRecords?: emptyList(),
                     position = viewModel.positionBeingModified!!
                 )
@@ -226,6 +227,8 @@ private fun SetList(
     viewModel: SessionViewModel,
     navController: NavController
 ) {
+    val setSize = exerciseSetsList.totalSets.size
+
     Column (
         modifier = Modifier.fillMaxSize()
     ) {
@@ -246,6 +249,7 @@ private fun SetList(
                         ExerciseSets(
                             sets = setList,
                             sessionId = session.id,
+                            setSize = setSize,
                             checkedRecords = viewModel.checkedRecords ?: emptyList(),
                             onUpdateRecords = { onUpdateRecords(it) },
                             onDeleteExercise = {
@@ -321,8 +325,9 @@ private fun SessionNameAndDate (
 @Composable
 private fun ExerciseHeader (
     exerciseName: String,
-    sessionPosition: String,
+    sessionPosition: Int,
     category: String,
+    setSize: Int,
     onChangeExercise: () -> Unit,
     onDeleteExercise: () -> Unit,
     onMoveExerciseUp: () -> Unit,
@@ -342,13 +347,14 @@ private fun ExerciseHeader (
         ) {
             Text(
                 modifier = Modifier
-                    .padding(4.dp),
+                    .padding(4.dp)
+                    .weight(1f),
                 text = "$sessionPosition: $exerciseName",
                 color = MaterialTheme.colors.onBackground,
-                style = MaterialTheme.typography.h6
+                style = MaterialTheme.typography.h6,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-
-            Spacer(modifier = Modifier.weight(1f))
 
             Box(modifier = Modifier
                 .wrapContentSize(Alignment.TopStart)) {
@@ -364,10 +370,13 @@ private fun ExerciseHeader (
                     expanded = dropdownMenuExpanded,
                     onDismissRequest = { dropdownMenuExpanded = false }
                 ) {
-                    DropdownMenuItem(onClick = {
-                        onMoveExerciseUp()
-                        dropdownMenuExpanded = false
-                    }) {
+                    DropdownMenuItem(
+                        onClick = {
+                            onMoveExerciseUp()
+                            dropdownMenuExpanded = false
+                        },
+                        enabled = (sessionPosition != 1)
+                    ) {
                         Icon(
                             modifier = Modifier.padding(4.dp),
                             painter = painterResource(id = R.drawable.ic_arrow_up),
@@ -381,10 +390,13 @@ private fun ExerciseHeader (
                         )
                     }
 
-                    DropdownMenuItem(onClick = {
-                        onMoveExerciseDown()
-                        dropdownMenuExpanded = false
-                    }) {
+                    DropdownMenuItem(
+                        onClick = {
+                            onMoveExerciseDown()
+                            dropdownMenuExpanded = false
+                        },
+                        enabled = (sessionPosition != setSize)
+                    ) {
                         Icon(
                             modifier = Modifier.padding(4.dp),
                             painter = painterResource(id = R.drawable.ic_arrow_down),
@@ -499,6 +511,7 @@ private fun ExerciseHeader (
 private fun ExerciseSets(
     sets: List<Record>,
     sessionId: UUID,
+    setSize: Int,
     checkedRecords: List<Record>,
     onUpdateRecords: (Record) -> Unit,
     onDeleteExercise: (Int) -> Unit,
@@ -519,8 +532,9 @@ private fun ExerciseSets(
     ) {
         ExerciseHeader(
             exerciseName = exerciseName,
-            sessionPosition = sets[0].sessionPosition.toString(),
+            sessionPosition = sets[0].sessionPosition,
             category = category,
+            setSize = setSize,
             onChangeExercise = { /*TODO*/ },
             onDeleteExercise = { onDeleteExercise(sets[0].sessionPosition) },
             onMoveExerciseUp = { onMoveExerciseUp(sets[0].sessionPosition) },
@@ -660,9 +674,7 @@ private fun SetItem(
         Checkbox(
             checked = recordIsSaved,
             onCheckedChange = {
-                if (!recordIsSaved) {
-                    onChangeRecordState(currentRecord)
-                }
+                onChangeRecordState(currentRecord)
             },
             colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.secondary),
             modifier = Modifier.weight(0.5f)
@@ -976,7 +988,7 @@ private fun moveSetInPositionBefore(
     records.forEach { record ->
         if (record.sessionPosition == position) {
             newRecords[currentPosition] = (record.copy(sessionPosition = record.sessionPosition - 1))
-        } else if ((record.sessionPosition - position) == 1) {
+        } else if ((position - record.sessionPosition) == 1) {
             newRecords[currentPosition] = (record.copy(sessionPosition = record.sessionPosition + 1))
         }
 
@@ -1062,18 +1074,26 @@ fun updateRecordWithCategory(
 ): Record {
     when (category) {
         "General" -> {
-            record.weight = value1.toFloat()
-            record.repetitions = value2.toInt()
+            if (value1 != "" && value2 != "") {
+                record.weight = value1.toFloat()
+                record.repetitions = value2.toInt()
+            }
         }
         "Cardio" -> {
-            record.distance = value1.toFloat()
-            record.exerciseDuration = value2.toFloat()
+            if (value1 != "" && value2 != "") {
+                record.distance = value1.toFloat()
+                record.exerciseDuration = value2.toFloat()
+            }
         }
         "Reps only" -> {
-            record.repetitions = value1.toInt()
+            if (value1 != "") {
+                record.repetitions = value1.toInt()
+            }
         }
         "Duration" -> {
-            record.exerciseDuration = value2.toFloat()
+            if (value2 != "") {
+                record.exerciseDuration = value2.toFloat()
+            }
         }
     }
 

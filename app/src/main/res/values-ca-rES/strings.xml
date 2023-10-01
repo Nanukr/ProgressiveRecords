@@ -24,7 +24,7 @@
     <string name="change_exercise_button">Canviar exercici</string>
     <string name="delete_exercise_dialog_title">Eliminar exercici?</string>
     <string name="move_exercise_up_button">Moure amunt</string>
-    <string name="move_exercise_down_button">Moure a avall</string>
+    <string name="move_exercise_down_button">Moure avall</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Editar sessió actual</string>
