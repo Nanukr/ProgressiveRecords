@@ -52,11 +52,15 @@ fun SessionCreationScreen(
 ) {
     val addingExercise = rememberSaveable { mutableStateOf(false) }
 
+    val swappingExercise = rememberSaveable { mutableStateOf(false) }
+
     var deletingExercise by rememberSaveable { mutableStateOf(false) }
 
     val changingDate = rememberSaveable { mutableStateOf(false) }
 
     val savingSession = rememberSaveable { mutableStateOf(false) }
+
+    val exitingSession = rememberSaveable { mutableStateOf(false) }
 
     var session = viewModel.createdSession ?: Session(
         id = UUID.randomUUID(),
@@ -88,7 +92,6 @@ fun SessionCreationScreen(
             session = session,
             exerciseSetsList = exerciseSetsList,
             viewModel = viewModel,
-            navController = navController,
             onUpdateRecords = { record ->
                 val foundRecord = records.find { it.exerciseName == record.exerciseName && it.setNumber == record.setNumber }
                 records = if (foundRecord == null) {
@@ -108,6 +111,7 @@ fun SessionCreationScreen(
                 viewModel.createdSession = session
             },
             selectExercise = { addingExercise.value = true },
+            onChangeExercise = { swappingExercise.value = true },
             onDeleteExercise = { deletingExercise = true },
             onMoveExerciseUp = {
                 viewModel.positionBeingModified = it
@@ -136,7 +140,8 @@ fun SessionCreationScreen(
                 )
 
                 viewModel.positionBeingModified = null
-            }
+            },
+            onCancelSession = { exitingSession.value = true }
         )
 
         if (changingDate.value) {
@@ -172,6 +177,7 @@ fun SessionCreationScreen(
 
         if (addingExercise.value) {
             SelectExerciseDialog(
+                isSwapping = false,
                 onDismissRequest = { addingExercise.value = false },
                 onExerciseSelected = { exercises ->
                     addingExercise.value = false
@@ -187,8 +193,44 @@ fun SessionCreationScreen(
                                 sessionPosition = lastExercisePosition + 1,
                                 category = exercise.category
                             )
-                            viewModel.newRecords = records
                         }
+                        viewModel.newRecords = records
+                    }
+                }
+            )
+        }
+
+        if (swappingExercise.value) {
+            SelectExerciseDialog(
+                isSwapping = true,
+                onDismissRequest = {
+                    swappingExercise.value = false
+                },
+                onExerciseSelected = { exercises ->
+                    swappingExercise.value = false
+
+                    val previousSets = viewModel.previousSets!!
+
+                    var currentSet = 0
+
+                    val sessionPosition = viewModel.positionBeingModified!!
+
+                    if (exercises.isNotEmpty()) {
+                        deleteAllRecordsInPosition(viewModel = viewModel, moveExercises = false)
+                        records = viewModel.newRecords
+
+                        while (currentSet < previousSets) {
+                            records = records + createNewRecord(
+                                sessionId = session.id,
+                                previousSet = currentSet,
+                                exerciseName = exercises[0].exerciseName,
+                                sessionPosition = sessionPosition,
+                                category = exercises[0].category
+                            )
+
+                            currentSet ++
+                        }
+                        viewModel.newRecords = records
                     }
                 }
             )
@@ -202,8 +244,19 @@ fun SessionCreationScreen(
                 },
                 onExerciseDeleted = {
                     deletingExercise = false
-                    records = deleteSetInPosition(viewModel = viewModel)
+
+                    deleteAllRecordsInPosition(viewModel = viewModel)
+                    records = viewModel.newRecords
                 }
+            )
+        }
+
+        if (exitingSession.value) {
+            ExitSessionDialog(
+                onExitSession = {
+                    cancelAndDelete(viewModel = viewModel, navController = navController)
+                },
+                onDismissRequest = { exitingSession.value = false }
             )
         }
     }
@@ -217,15 +270,16 @@ fun SessionCreationScreen(
 private fun SetList(
     session: Session,
     exerciseSetsList: ExerciseSetsList,
+    viewModel: SessionViewModel,
     onUpdateRecords: (Record) -> Unit,
     onUpdateSessionName: (String) -> Unit,
     onOpenDateDialog: () -> Unit,
     selectExercise: () -> Unit,
+    onChangeExercise: () -> Unit,
     onDeleteExercise: () -> Unit,
     onMoveExerciseUp: (Int) -> Unit,
     onMoveExerciseDown: (Int) -> Unit,
-    viewModel: SessionViewModel,
-    navController: NavController
+    onCancelSession: () -> Unit
 ) {
     val setSize = exerciseSetsList.totalSets.size
 
@@ -241,7 +295,7 @@ private fun SetList(
         if (exerciseSetsList.totalSets.isEmpty()) {
             AddExerciseButton(selectExercise = { selectExercise() })
 
-            CancelButton(viewModel = viewModel, navController = navController)
+            CancelButton(onCancelSession = { onCancelSession() })
         } else {
             LazyColumn {
                 items(exerciseSetsList.totalSets) {setList  ->
@@ -252,6 +306,11 @@ private fun SetList(
                             setSize = setSize,
                             checkedRecords = viewModel.checkedRecords ?: emptyList(),
                             onUpdateRecords = { onUpdateRecords(it) },
+                            onChangeExercise = { previousSets, sessionPosition ->
+                                viewModel.previousSets = previousSets
+                                viewModel.positionBeingModified = sessionPosition
+                                onChangeExercise()
+                            },
                             onDeleteExercise = {
                                 viewModel.positionBeingModified = it
                                 onDeleteExercise()
@@ -277,7 +336,7 @@ private fun SetList(
                 }
 
                 item {
-                    CancelButton(viewModel = viewModel, navController = navController)
+                    CancelButton(onCancelSession = { onCancelSession() })
                 }
             }
         }
@@ -514,6 +573,7 @@ private fun ExerciseSets(
     setSize: Int,
     checkedRecords: List<Record>,
     onUpdateRecords: (Record) -> Unit,
+    onChangeExercise: (previousSets: Int, sessionPosition: Int) -> Unit,
     onDeleteExercise: (Int) -> Unit,
     onMoveExerciseUp: (Int) -> Unit,
     onMoveExerciseDown: (Int) -> Unit,
@@ -535,7 +595,7 @@ private fun ExerciseSets(
             sessionPosition = sets[0].sessionPosition,
             category = category,
             setSize = setSize,
-            onChangeExercise = { /*TODO*/ },
+            onChangeExercise = { onChangeExercise(sets[sets.lastIndex].setNumber, sets[0].sessionPosition) },
             onDeleteExercise = { onDeleteExercise(sets[0].sessionPosition) },
             onMoveExerciseUp = { onMoveExerciseUp(sets[0].sessionPosition) },
             onMoveExerciseDown = { onMoveExerciseDown(sets[0].sessionPosition) }
@@ -724,14 +784,13 @@ private fun AddExerciseButton(
 
 @Composable
 private fun CancelButton (
-    viewModel: SessionViewModel,
-    navController: NavController
+    onCancelSession: () -> Unit
 ) {
     StandardButton(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp),
-        onClick = { cancelAndDelete(viewModel, navController) },
+        onClick = { onCancelSession() },
         text = stringResource(R.string.cancel_session_button),
         backgroundColor = Color.LightGray,
         textColor = Color.Black
@@ -741,6 +800,7 @@ private fun CancelButton (
 //Dialogs
 @Composable
 private fun SelectExerciseDialog (
+    isSwapping: Boolean,
     onDismissRequest: () -> Unit,
     onExerciseSelected: (List<Exercise>) -> Unit
 ) {
@@ -752,6 +812,7 @@ private fun SelectExerciseDialog (
             ExerciseListScreen(
                 viewModel = ExerciseViewModel(),
                 isBeingSelected = true,
+                isSwapping = isSwapping,
                 onExercisesSelected = { onExerciseSelected(it) }
             )
         }
@@ -764,69 +825,18 @@ private fun SaveSessionDialog (
     onSessionSaved: () -> Unit,
     viewModel: SessionViewModel
 ) {
-    Dialog (onDismissRequest = { onDismissRequest() } ) {
-        Card (
-            backgroundColor = MaterialTheme.colors.primary,
-            shape = RoundedCornerShape(8.dp)
-                ) {
-            if (viewModel.checkedRecords?.isNotEmpty() == true) {
-                Column (modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp),
-                        text = stringResource(R.string.save_session_top_message),
-                        style = MaterialTheme.typography.body1,
-                        color = MaterialTheme.colors.onPrimary,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp),
-                        text = stringResource(R.string.save_session_bottom_message),
-                        style = MaterialTheme.typography.body2,
-                        color = MaterialTheme.colors.onPrimary,
-                        textAlign = TextAlign.Center
-                    )
-
-                    AlertDialogButtons(
-                        onCancel = { onDismissRequest() },
-                        onConfirm = { onSessionSaved() }
-                    )
-                }
-
-            } else {
-                Column (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp),
-                        text = stringResource(R.string.save_session_error_message),
-                        style = MaterialTheme.typography.body1,
-                        color = MaterialTheme.colors.onPrimary,
-                        textAlign = TextAlign.Center
-                    )
-
-                    TextButton (
-                        onClick = { onDismissRequest() },
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.cancel_button),
-                            color = MaterialTheme.colors.secondary
-                        )
-                    }
-                }
-            }
-        }
+    if (viewModel.checkedRecords?.isNotEmpty() == true) {
+        StandardTwoButtonsDialog(
+            title = stringResource(R.string.save_session_top_message),
+            text = stringResource(R.string.save_session_bottom_message),
+            onConfirm = { onSessionSaved() },
+            onDismissRequest = { onDismissRequest() }
+        )
+    } else {
+        StandardAlertDialog(
+            title = stringResource(R.string.save_session_error_message),
+            onDismissRequest = { onDismissRequest() }
+        )
     }
 }
 
@@ -835,29 +845,24 @@ private fun DeleteExerciseDialog (
     onDismissRequest: () -> Unit,
     onExerciseDeleted: () -> Unit,
 ) {
-    AlertDialog(
-        title = {
-            Text (
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.delete_exercise_dialog_title),
-                textAlign = TextAlign.Center
-            )
-        },
-        text = {
-            Text (
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.delete_item_dialog_text),
-                textAlign = TextAlign.Center
-            )
-        },
-        shape = RoundedCornerShape(8.dp),
-        onDismissRequest = { onDismissRequest() },
-        buttons = {
-            AlertDialogButtons(
-                onCancel = { onDismissRequest() },
-                onConfirm = { onExerciseDeleted() }
-            )
-        }
+    StandardTwoButtonsDialog(
+        title = stringResource(R.string.delete_exercise_dialog_title),
+        text = stringResource(R.string.delete_item_dialog_text),
+        onConfirm = { onExerciseDeleted() },
+        onDismissRequest = { onDismissRequest() }
+    )
+}
+
+@Composable
+private fun ExitSessionDialog(
+    onExitSession: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    StandardTwoButtonsDialog(
+        title = stringResource(R.string.exit_session_dialog_title),
+        text = stringResource(R.string.exit_session_dialog_text),
+        onConfirm = { onExitSession() },
+        onDismissRequest = { onDismissRequest() }
     )
 }
 
@@ -905,6 +910,7 @@ private fun SessionDatePickerDialog(
     }
 }
 
+//Functions
 private fun saveSessionToDb (
     viewModel: SessionViewModel,
     navController: NavController,
@@ -960,22 +966,47 @@ private fun createNewRecord(
 }
 
 private fun deleteSetInPosition(
-    viewModel: SessionViewModel
+    records: List<Record>,
+    position: Int,
+    moveExercises: Boolean
 ): List<Record> {
+    val newRecords = records.toMutableList()
 
-    viewModel.newRecords.forEach { record ->
-        if (record.sessionPosition == viewModel.positionBeingModified) {
-            viewModel.newRecords -= record
+    var currentPosition = 0
+
+    records.forEach { record ->
+        if (record.sessionPosition == position) {
+            newRecords.remove(record)
+            currentPosition -= 1
         }
 
-        if (record.sessionPosition > viewModel.positionBeingModified!!) {
-            viewModel.newRecords -= record
-            viewModel.newRecords += record.copy(sessionPosition = record.sessionPosition - 1)
+        if (record.sessionPosition > position && moveExercises) {
+            newRecords[currentPosition] = record.copy(sessionPosition = record.sessionPosition - 1)
         }
+        currentPosition ++
     }
-    viewModel.positionBeingModified = null
 
-    return viewModel.newRecords
+    return newRecords.sortedWith(
+        compareBy<Record> { it.sessionPosition }
+            .thenBy { it.setNumber }
+    ).toList()
+}
+
+private fun deleteAllRecordsInPosition(
+    viewModel: SessionViewModel,
+    moveExercises: Boolean = true
+) {
+    viewModel.newRecords = deleteSetInPosition(
+        records = viewModel.newRecords,
+        position = viewModel.positionBeingModified!!,
+        moveExercises = moveExercises
+    )
+
+    viewModel.checkedRecords = deleteSetInPosition(
+        records = viewModel.checkedRecords?: emptyList(),
+        position = viewModel.positionBeingModified!!,
+        moveExercises = moveExercises
+    )
 }
 
 private fun moveSetInPositionBefore(

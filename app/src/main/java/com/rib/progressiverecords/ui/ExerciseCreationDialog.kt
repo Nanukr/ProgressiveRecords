@@ -24,10 +24,7 @@ import com.rib.progressiverecords.R
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.Muscle
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
-import com.rib.progressiverecords.ui.theme.MultipleOptionsChoosingDialog
-import com.rib.progressiverecords.ui.theme.ProgressiveRecordsTheme
-import com.rib.progressiverecords.ui.theme.SingleOptionChoosingDialog
-import com.rib.progressiverecords.ui.theme.StandardTextField
+import com.rib.progressiverecords.ui.theme.*
 
 @Composable
 fun ExerciseCreationDialog(
@@ -271,7 +268,9 @@ private fun ExerciseMusclesEntries(
                 Text(
                     modifier = Modifier.padding(16.dp),
                     text = selectedPrimMuscle,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Icon(
@@ -345,7 +344,9 @@ private fun ExerciseOthersEntries(
                 Text(
                     modifier = Modifier.padding(16.dp),
                     text = selectedCategory,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Icon(
@@ -412,39 +413,18 @@ private fun CreateExerciseDialogButtons(
     }
 }
 
+//Dialogs
 @Composable
 private fun MissingEntriesDialog(
     onDismissRequest: () -> Unit
 ) {
-    Dialog (onDismissRequest = { onDismissRequest() }) {
-        Card (
-            backgroundColor = MaterialTheme.colors.primary,
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column (
-                modifier = Modifier.padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(R.string.missing_entries_dialog_message),
-                    color = MaterialTheme.colors.onPrimary,
-                    textAlign = TextAlign.Center
-                )
-
-                TextButton (onClick = { onDismissRequest() }) {
-                    Text (
-                        text = stringResource(R.string.confirm_button),
-                        color = MaterialTheme.colors.secondary
-                    )
-                }
-            }
-        }
-    }
+    StandardAlertDialog(
+        title = stringResource(R.string.missing_entries_dialog_message),
+        onDismissRequest = { onDismissRequest() }
+    )
 }
 
+//Functions
 private fun checkExerciseEntries(exercise: Exercise): Boolean {
     return (exercise.exerciseName == "" || exercise.primMuscle == "" || exercise.category == "")
 }

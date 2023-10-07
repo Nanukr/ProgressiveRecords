@@ -48,7 +48,7 @@ fun Navigation(navController: NavHostController) {
         }
 
         composable("exercise") {
-            ExerciseListScreen(isBeingSelected = false, onExercisesSelected = {})
+            ExerciseListScreen(isBeingSelected = false, isSwapping = false, onExercisesSelected = {})
         }
     }
 }

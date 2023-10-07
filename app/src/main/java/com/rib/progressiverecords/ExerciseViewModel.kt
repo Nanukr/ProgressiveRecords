@@ -1,12 +1,10 @@
 package com.rib.progressiverecords
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rib.progressiverecords.model.Exercise
 import com.rib.progressiverecords.model.ExerciseSecMuscleCrossRef
 import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
-import com.rib.progressiverecords.model.relations.SessionWithRecords
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -54,11 +52,13 @@ class ExerciseViewModel : ViewModel() {
         _sortParams.value = _sortParams.value.copy(categories = categories)
     }
 
-    fun onChangeSelectedExercises(exercise: Exercise) {
+    fun onChangeSelectedExercises(exercise: Exercise, isSwapping: Boolean) {
         if (_exercisesSelected.value.contains(exercise)) {
             _exercisesSelected.value -= exercise
-        } else {
+        } else if (!isSwapping) {
             _exercisesSelected.value += exercise
+        } else {
+            _exercisesSelected.value = listOf(exercise)
         }
     }
 

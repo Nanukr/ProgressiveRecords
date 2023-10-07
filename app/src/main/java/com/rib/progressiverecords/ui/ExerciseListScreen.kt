@@ -35,12 +35,14 @@ import com.rib.progressiverecords.model.relations.ExerciseWithSecMuscle
 import com.rib.progressiverecords.ui.theme.ProgressiveRecordsTheme
 import com.rib.progressiverecords.ui.theme.SearchBar
 import com.rib.progressiverecords.ui.theme.StandardButton
+import com.rib.progressiverecords.ui.theme.StandardTwoButtonsDialog
 import kotlinx.coroutines.launch
 
 @Composable
 fun ExerciseListScreen(
     viewModel: ExerciseViewModel = viewModel(),
     isBeingSelected: Boolean,
+    isSwapping: Boolean,
     onExercisesSelected: (List<Exercise>) -> Unit
 ) {
     var exerciseBeingModified by rememberSaveable { mutableStateOf(false) }
@@ -67,7 +69,7 @@ fun ExerciseListScreen(
 
             ExerciseList(
                 viewModel = viewModel,
-                onSelectItem = { viewModel.onChangeSelectedExercises(it)},
+                onSelectItem = { viewModel.onChangeSelectedExercises(it, isSwapping)},
                 onEditItem = {
                     exerciseBeingModified = true
                     viewModel.exerciseBeingModified = it
@@ -86,6 +88,7 @@ fun ExerciseListScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     SelectButtons(
+                        isSwapping = isSwapping,
                         onAddExercises = { onExercisesSelected(viewModel.exercisesSelected.value) },
                         onCancelAdding = { onExercisesSelected(emptyList()) }
                     )
@@ -298,68 +301,34 @@ private fun ExerciseItem(
     }
 }
 
+//Dialogs
 @Composable
 private fun DeleteExerciseDialog(
     exercise: ExerciseWithSecMuscle,
     onDeleteExercise: (ExerciseWithSecMuscle) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        Card (
-            backgroundColor = MaterialTheme.colors.primary,
-            shape = RoundedCornerShape(16.dp)
-                ) {
-            Column (
-                modifier = Modifier.padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(R.string.confirm_exercise_deletion_message_top, exercise.exercise.exerciseName),
-                    color = MaterialTheme.colors.onPrimary,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.body1
-                )
-
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(R.string.confirm_exercise_deletion_message_bottom),
-                    color = MaterialTheme.colors.onPrimary,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.body2
-                )
-
-                Row (
-                    modifier = Modifier.padding(8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    TextButton (onClick = { onDismissRequest() }) {
-                        Text (
-                            text = stringResource(R.string.cancel_button),
-                            color = MaterialTheme.colors.secondary
-                        )
-                    }
-
-                    TextButton (onClick = { onDeleteExercise(exercise) }) {
-                        Text (
-                            text = stringResource(R.string.confirm_button),
-                            color = MaterialTheme.colors.secondary
-                        )
-                    }
-                }
-            }
-        }
-    }
+    StandardTwoButtonsDialog(
+        title = stringResource(R.string.confirm_exercise_deletion_message_top, exercise.exercise.exerciseName),
+        text = stringResource(R.string.confirm_exercise_deletion_message_bottom),
+        onConfirm = { onDeleteExercise(exercise) },
+        onDismissRequest = { onDismissRequest() }
+    )
 }
 
+//Buttons
 @Composable
 private fun SelectButtons(
+    isSwapping: Boolean,
     onAddExercises: () -> Unit,
     onCancelAdding: () -> Unit
 ) {
+    val confirmString = if (isSwapping) {
+        stringResource(R.string.change_exercise_in_session_button)
+    } else {
+        stringResource(R.string.add_exercises_to_session_button)
+    }
+
     Row (
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
@@ -387,7 +356,7 @@ private fun SelectButtons(
         StandardButton(
             modifier = Modifier
                 .weight(1f),
-            text = stringResource(R.string.add_exercises_to_session_button),
+            text = confirmString,
             onClick = { onAddExercises() }
         )
     }
@@ -397,10 +366,11 @@ private fun SelectButtons(
 @Composable
 private fun SelectButtonsPreview() {
     ProgressiveRecordsTheme {
-        SelectButtons(onAddExercises = { /*TODO*/ }) {}
+        SelectButtons(onAddExercises = { /*TODO*/ }, isSwapping =  false) {}
     }
 }
 
+//Functions
 private fun addExerciseToDb(
     exercise: ExerciseWithSecMuscle,
     viewModel: ExerciseViewModel

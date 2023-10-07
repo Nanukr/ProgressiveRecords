@@ -24,6 +24,7 @@ import com.rib.progressiverecords.R
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
+import com.rib.progressiverecords.ui.theme.StandardTwoButtonsDialog
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -309,55 +310,12 @@ private fun DeleteSessionDialog(
     onDismissRequest: () -> Unit
 ) {
     if (session != null) {
-        Dialog(onDismissRequest = onDismissRequest) {
-            Card (
-                backgroundColor = MaterialTheme.colors.primary,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column (
-                    modifier = Modifier.padding(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        text = stringResource(R.string.delete_session_dialog_top_message),
-                        color = MaterialTheme.colors.onPrimary,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.body1
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        text = stringResource(R.string.delete_item_dialog_text),
-                        color = MaterialTheme.colors.onPrimary,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.body2
-                    )
-
-                    Row (
-                        modifier = Modifier.padding(8.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        TextButton (onClick = { onDismissRequest() }) {
-                            Text (
-                                text = stringResource(R.string.cancel_button),
-                                color = MaterialTheme.colors.secondary
-                            )
-                        }
-
-                        TextButton (onClick = { onDeleteSession(session) }) {
-                            Text (
-                                text = stringResource(R.string.confirm_button),
-                                color = MaterialTheme.colors.secondary
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        StandardTwoButtonsDialog(
+            title = stringResource(R.string.delete_session_dialog_top_message),
+            text = stringResource(R.string.delete_item_dialog_text),
+            onConfirm = { onDeleteSession(session) },
+            onDismissRequest = { onDismissRequest() }
+        )
     }
 }
 

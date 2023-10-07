@@ -1,6 +1,5 @@
 package com.rib.progressiverecords.ui
 
-import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,9 +47,10 @@ fun SessionList(
     viewModel: SessionViewModel,
     navController: NavController
 ) {
-    val sessions = viewModel.sessions.collectAsState()
+    val sessions = viewModel.sessions.collectAsState().value
+        .sortedWith(compareByDescending { it.session.date })
 
-    if (sessions.value.isEmpty()) {
+    if (sessions.isEmpty()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,7 +66,7 @@ fun SessionList(
         LazyColumn(
             modifier = Modifier.padding(8.dp)
         ) {
-            items(sessions.value) {session ->
+            items(sessions) {session ->
                 SessionItem(
                     session = session,
                     onSelectSession = {

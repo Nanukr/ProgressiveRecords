@@ -24,6 +24,8 @@
     <string name="delete_exercise_dialog_title">Delete exercise?</string>
     <string name="move_exercise_up_button">Move up</string>
     <string name="move_exercise_down_button">Move down</string>
+    <string name="exit_session_dialog_title">Exit session?</string>
+    <string name="exit_session_dialog_text">All changes will be deleted</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Edit current session</string>
@@ -40,6 +42,7 @@
     <string name="confirm_exercise_deletion_message_bottom">This will not delete any records containing this exercise</string>
     <string name="create_exercise_icon_description">Create exercise</string>
     <string name="add_exercises_to_session_button">Add</string>
+    <string name="change_exercise_in_session_button">Change</string>
     <string name="search_exercise_bar_hint">Search exercise…</string>
 
     //Exercise creation
@@ -104,6 +107,7 @@
     //Miscellaneous
     <string name="cancel_button">Cancel</string>
     <string name="confirm_button">Confirm</string>
+    <string name="close_button">Close</string>
     <string name="delete_item_dialog_text">This action cannot be undone</string>
 
 </resources>

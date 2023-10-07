@@ -25,6 +25,8 @@
     <string name="delete_exercise_dialog_title">Eliminar exercici?</string>
     <string name="move_exercise_up_button">Moure amunt</string>
     <string name="move_exercise_down_button">Moure avall</string>
+    <string name="exit_session_dialog_title">Sortir de la sessió?</string>
+    <string name="exit_session_dialog_text">Tots els canvis seran eliminats</string>
 
     //Session detail
     <string name="edit_detailed_session_icon_description">Editar sessió actual</string>
@@ -41,6 +43,7 @@
     <string name="confirm_exercise_deletion_message_bottom">No s\'eliminarà cap registre que contingui aquest exercici</string>
     <string name="create_exercise_icon_description">Crear exercici</string>
     <string name="add_exercises_to_session_button">Afegir</string>
+    <string name="change_exercise_in_session_button">Canviar</string>
     <string name="search_exercise_bar_hint">Buscar exercici…</string>
 
     //Exercise creation
@@ -105,6 +108,7 @@
     //Miscellaneous
     <string name="cancel_button">Cancel·lar</string>
     <string name="confirm_button">Confirmar</string>
+    <string name="close_button">Tancar</string>
     <string name="delete_item_dialog_text">Aquesta acció no es pot desfer</string>
 
 </resources>

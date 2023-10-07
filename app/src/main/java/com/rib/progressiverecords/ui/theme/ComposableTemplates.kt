@@ -77,6 +77,22 @@ fun StandardButton (
     }
 }
 
+@Composable
+fun StandardTextButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    TextButton(
+        onClick = { onClick() },
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Text(
+            text = text,
+            color = MaterialTheme.colors.secondary
+        )
+    }
+}
+
 //TextFields
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -215,6 +231,71 @@ fun SearchBar(
 }
 
 //Dialogs
+@Composable
+fun StandardTwoButtonsDialog(
+    title: String,
+    text: String,
+    onConfirm: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    AlertDialog(
+        title = {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = title,
+                textAlign = TextAlign.Center
+            )
+        },
+        text = {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = text,
+                textAlign = TextAlign.Center
+            )
+        },
+        shape = RoundedCornerShape(8.dp),
+        onDismissRequest = { onDismissRequest() },
+        buttons = {
+            AlertDialogButtons(
+                onCancel = { onDismissRequest() },
+                onConfirm = { onConfirm() }
+            )
+        }
+    )
+}
+
+@Composable
+fun StandardAlertDialog(
+    title: String,
+    onDismissRequest: () -> Unit
+) {
+    AlertDialog(
+        title = {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = title,
+                textAlign = TextAlign.Center
+            )
+        },
+        shape = RoundedCornerShape(8.dp),
+        onDismissRequest = { onDismissRequest() },
+        buttons = {
+            Row (
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StandardTextButton(
+                    text = stringResource(R.string.close_button),
+                    onClick = { onDismissRequest() }
+                )
+            }
+        }
+    )
+}
+
 @Composable
 fun SingleOptionChoosingDialog(
     options: List<String>,
@@ -412,25 +493,15 @@ fun AlertDialogButtons(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        TextButton(
-            onClick = { onCancel() },
-            modifier = Modifier.padding(horizontal = 8.dp)
-        ) {
-            androidx.compose.material3.Text(
-                text = stringResource(R.string.cancel_button),
-                color = MaterialTheme.colors.secondary
-            )
-        }
+        StandardTextButton(
+            text = stringResource(R.string.cancel_button),
+            onClick = { onCancel() }
+        )
 
-        TextButton(
-            onClick = { onConfirm() },
-            modifier = Modifier.padding(8.dp)
-        ) {
-            androidx.compose.material3.Text(
-                text = stringResource(R.string.confirm_button),
-                color = MaterialTheme.colors.secondary
-            )
-        }
+        StandardTextButton(
+            text = stringResource(R.string.confirm_button),
+            onClick = { onConfirm() }
+        )
     }
 }
 
