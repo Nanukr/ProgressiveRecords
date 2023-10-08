@@ -28,11 +28,11 @@
     <string name="exit_session_dialog_text">All changes will be deleted</string>
 
     //Session detail
-    <string name="edit_detailed_session_icon_description">Edit current session</string>
     <string name="back_button_icon_description">Go back</string>
     <string name="reps_label">reps</string>
     <string name="delete_session_button_caption">Delete session</string>
     <string name="delete_session_dialog_top_message">Delete session?</string>
+    <string name="edit_session_button_caption">Edit session</string>
 
     //Exercise list
     <string name="empty_exercise_list_message">No exercises found</string>

@@ -94,6 +94,10 @@ private fun SessionItem(
             .thenBy { it.setNumber }
     )
 
+    LaunchedEffect(session) {
+        records = session.records
+    }
+
     val exerciseSetsList = ExerciseSetsList().organizeRecords(records).totalSets
 
     Card (

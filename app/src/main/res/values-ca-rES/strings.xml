@@ -29,11 +29,11 @@
     <string name="exit_session_dialog_text">Tots els canvis seran eliminats</string>
 
     //Session detail
-    <string name="edit_detailed_session_icon_description">Editar sessió actual</string>
     <string name="back_button_icon_description">Retrocedir</string>
     <string name="reps_label">reps</string>
     <string name="delete_session_button_caption">Eliminar sessió</string>
     <string name="delete_session_dialog_top_message">Eliminar sessió?</string>
+    <string name="edit_session_button_caption">Editar sessió</string>
 
     //Exercise list
     <string name="empty_exercise_list_message">No s\'han trobat exercicis</string>

@@ -79,6 +79,12 @@ private fun SetList(
             ) {
         SessionHeader(
             session = session,
+            onEditSession = {
+                viewModel.createdSession = session
+                viewModel.newRecords = records
+                viewModel.checkedRecords = records
+                navController.navigate("session_creation")
+            },
             onDeleteSession = { sessionBeingDeleted = true }
         )
 
@@ -110,6 +116,7 @@ private fun SetList(
 @Composable
 private fun SessionHeader (
     session: Session?,
+    onEditSession: () -> Unit,
     onDeleteSession: () -> Unit
 ) {
     var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
@@ -143,15 +150,39 @@ private fun SessionHeader (
             IconButton(onClick = { dropdownMenuExpanded = true }) {
                 Icon(Icons.Default.MoreVert,
                     tint = MaterialTheme.colors.onBackground,
-                    contentDescription = stringResource(R.string.edit_detailed_session_icon_description)
+                    contentDescription = stringResource(R.string.edit_session_button_caption)
                 )
             }
             DropdownMenu(
                 expanded = dropdownMenuExpanded,
                 onDismissRequest = { dropdownMenuExpanded = false }
             ) {
+                DropdownMenuItem(onClick = { onEditSession() }) {
+                    Icon(
+                        modifier = Modifier.padding(4.dp),
+                        painter = painterResource(id = R.drawable.ic_edit),
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.onPrimary
+                    )
+
+                    Text(
+                        text = stringResource(R.string.edit_session_button_caption),
+                        color = MaterialTheme.colors.onPrimary
+                    )
+                }
+
                 DropdownMenuItem(onClick = { onDeleteSession() }) {
-                    Text(stringResource(R.string.delete_session_button_caption))
+                    Icon(
+                        modifier = Modifier.padding(4.dp),
+                        painter = painterResource(id = R.drawable.ic_delete),
+                        contentDescription = "",
+                        tint = MaterialTheme.colors.onPrimary
+                    )
+
+                    Text(
+                        text = stringResource(R.string.delete_session_button_caption),
+                        color = MaterialTheme.colors.onPrimary
+                    )
                 }
             }
         }
