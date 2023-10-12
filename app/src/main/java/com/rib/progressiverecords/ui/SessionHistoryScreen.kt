@@ -11,8 +11,8 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseSetsList
@@ -24,20 +24,25 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun SessionListScreen(
+fun SessionHistoryScreen(
     viewModel: SessionViewModel,
     navController: NavController
 ) {
     Scaffold(
         topBar = { TopBar(
-            onClick = {
-                navController.navigate("session_creation")
-            },
-            icon = painterResource(R.drawable.ic_add),
+            onClick = {},
+            title = stringResource(R.string.history_nav_item_text),
             contentDescription = stringResource(R.string.create_session_icon_description)
         ) }
     ) { it
-        SessionList(viewModel = viewModel, navController = navController)
+        SessionList(
+            viewModel = viewModel,
+            areTemplates = false,
+            onSelectSession = {
+                viewModel.detailedSession = it
+                navController.navigate("session_detail")
+            }
+        )
     }
     BackHandler {}
 }
@@ -45,9 +50,18 @@ fun SessionListScreen(
 @Composable
 fun SessionList(
     viewModel: SessionViewModel,
-    navController: NavController
+    areTemplates: Boolean,
+    onSelectSession: (SessionWithRecords) -> Unit
 ) {
+    val emptyListMessage = when (areTemplates) {
+        true -> stringResource(R.string.empty_session_list_message)
+        false -> stringResource(R.string.empty_template_list_message)
+    }
+
     val sessions = viewModel.sessions.collectAsState().value
+        .filter {
+            it.session.isTemplate == if (areTemplates) { 1 } else { 0 }
+        }
         .sortedWith(compareByDescending { it.session.date })
 
     if (sessions.isEmpty()) {
@@ -58,7 +72,7 @@ fun SessionList(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = stringResource(R.string.empty_session_list_message),
+                text = emptyListMessage,
                 color = MaterialTheme.colors.onPrimary
             )
         }
@@ -69,9 +83,9 @@ fun SessionList(
             items(sessions) {session ->
                 SessionItem(
                     session = session,
+                    areTemplates = areTemplates,
                     onSelectSession = {
-                        viewModel.detailedSession = it
-                        navController.navigate("session_detail")
+                        onSelectSession(it)
                     }
                 )
             }
@@ -86,6 +100,7 @@ fun SessionList(
 @Composable
 private fun SessionItem(
     session: SessionWithRecords,
+    areTemplates: Boolean,
     onSelectSession: (SessionWithRecords) -> Unit
 ) {
     var records by remember { mutableStateOf((session.records)) }
@@ -100,12 +115,14 @@ private fun SessionItem(
 
     val exerciseSetsList = ExerciseSetsList().organizeRecords(records).totalSets
 
+    var currentSet = 0
+
     Card (
         modifier = Modifier
-            .padding(16.dp)
+            .padding(8.dp)
             .fillMaxWidth()
             .clickable { onSelectSession(session) },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(8.dp),
         backgroundColor = MaterialTheme.colors.primary,
         elevation = 4.dp
     ) {
@@ -114,28 +131,41 @@ private fun SessionItem(
                 .padding(8.dp)
                 ) {
 
-            Row {
-                Text(
-                    modifier = Modifier.padding(8.dp),
-                    text = session.session.sessionName,
-                    style = MaterialTheme.typography.h6
-                )
+            Row (
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        text = session.session.sessionName,
+                        style = MaterialTheme.typography.h6
+                    )
 
-                Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        text = "${exerciseSetsList.size} " + stringResource(R.string.exercise_nav_item_text),
+                        style = MaterialTheme.typography.body2,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
 
-                Text(
-                    modifier = Modifier.padding(8.dp),
-                    text = SimpleDateFormat
-                        .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
-                        .format(session.session.date).toString(),
-                    style = MaterialTheme.typography.body1
-                )
+                if (!areTemplates) {
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Text(
+                        modifier = Modifier.padding(8.dp),
+                        text = SimpleDateFormat
+                            .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
+                            .format(session.session.date).toString(),
+                        style = MaterialTheme.typography.body1
+                    )
+                }
             }
 
             Divider()
 
             exerciseSetsList.forEach {set ->
-                if (set.isNotEmpty()) {
+                if (set.isNotEmpty() && currentSet != 5) {
                     val lastSet = set[set.lastIndex]
                     Row {
                         Text(
@@ -154,7 +184,18 @@ private fun SessionItem(
                             modifier = Modifier.padding(4.dp)
                         )
                     }
+                    currentSet ++
                 }
+            }
+
+            if (exerciseSetsList.size > 5) {
+                Text(
+                    modifier = Modifier.padding(8.dp),
+                    text = "+ ${exerciseSetsList.size - 5}",
+                    color = MaterialTheme.colors.onPrimary,
+                    style = MaterialTheme.typography.body2,
+                    fontStyle = FontStyle.Italic
+                )
             }
         }
     }

@@ -30,24 +30,31 @@ fun BuilderScreen(
             val currentRoute = navBackStackEntry?.destination?.route
 
             val itemNames = listOf(
-                stringResource(R.string.session_nav_item_text),
+                stringResource(R.string.history_nav_item_text),
+                stringResource(R.string.train_nav_item_text),
                 stringResource(R.string.exercise_nav_item_text)
             )
 
-            bottomBarState.value = (currentRoute == "session_list" || currentRoute == "exercise")
+            bottomBarState.value = (currentRoute == "session_list" || currentRoute == "exercise" || currentRoute == "session_templates")
 
             BottomNavigationBar(
                 items = listOf(
                     BottomNavItem(
                         name = itemNames[0],
                         route = "session_screen",
-                        icon = painterResource(R.drawable.ic_storage)
+                        icon = painterResource(R.drawable.ic_history)
                     ),
 
                     BottomNavItem(
                         name = itemNames[1],
-                        route = "exercise",
+                        route = "session_templates",
                         icon = painterResource(R.drawable.ic_dumbbell)
+                    ),
+
+                    BottomNavItem(
+                        name = itemNames[2],
+                        route = "exercise",
+                        icon = painterResource(R.drawable.ic_storage)
                     )
                 ),
                 navController = navController,

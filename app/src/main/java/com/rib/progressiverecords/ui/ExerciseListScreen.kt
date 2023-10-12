@@ -56,6 +56,7 @@ fun ExerciseListScreen(
                     exerciseBeingModified = true
                     viewModel.exerciseBeingModified = createEmptyExercise()
                 },
+                title = stringResource(R.string.exercise_nav_item_text),
                 icon = painterResource(R.drawable.ic_add),
                 contentDescription = stringResource(R.string.create_exercise_icon_description)
             )

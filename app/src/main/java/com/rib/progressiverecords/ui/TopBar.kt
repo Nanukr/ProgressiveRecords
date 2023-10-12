@@ -3,14 +3,17 @@ package com.rib.progressiverecords.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun TopBar(
     onClick: () -> Unit,
-    icon: Painter,
+    title: String = "",
+    icon: Painter? = null,
     contentDescription: String,
     endAlignment: Boolean = true
 ) {
@@ -21,16 +24,34 @@ fun TopBar(
     ) {
         Row (
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if (endAlignment) {Arrangement.End} else {Arrangement.Start}
+            horizontalArrangement = if (endAlignment) {Arrangement.End} else {Arrangement.Start},
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                modifier = Modifier.padding(8.dp),
-                onClick = { onClick() }
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = contentDescription
-                )
+            Text(
+                modifier = Modifier
+                    .then(
+                        if (title != "") {
+                            Modifier.padding(horizontal = 32.dp).weight(1f)
+                        } else {
+                            Modifier
+                        }
+                    ),
+                text = title,
+                color = MaterialTheme.colors.onPrimary,
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            if (icon != null) {
+                IconButton(
+                    modifier = Modifier.padding(8.dp),
+                    onClick = { onClick() }
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = contentDescription
+                    )
+                }
             }
         }
     }

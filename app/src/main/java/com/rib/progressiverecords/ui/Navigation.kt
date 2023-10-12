@@ -33,7 +33,12 @@ fun Navigation(navController: NavHostController) {
         ) {
             composable("session_list") {
                 val viewModel = it.sharedViewModel<SessionViewModel>(navController)
-                SessionListScreen(viewModel, navController)
+                SessionHistoryScreen(viewModel, navController)
+            }
+
+            composable("session_templates") {
+                val viewModel = it.sharedViewModel<SessionViewModel>(navController)
+                SessionTemplatesScreen(viewModel, navController)
             }
 
             composable("session_creation") {
@@ -63,7 +68,8 @@ fun BottomNavigationBar(
     val backStackEntry = navController.currentBackStackEntryAsState()
 
     val itemNames = listOf(
-        stringResource(R.string.session_nav_item_text),
+        stringResource(R.string.history_nav_item_text),
+        stringResource(R.string.train_nav_item_text),
         stringResource(R.string.exercise_nav_item_text)
     )
     
@@ -79,7 +85,8 @@ fun BottomNavigationBar(
             items.forEach{ item ->
                 val selected = when (item.name) {
                     itemNames[0] -> backStackEntry.value?.destination?.route == "session_list"
-                    itemNames[1] -> backStackEntry.value?.destination?.route == "exercise"
+                    itemNames[1] -> backStackEntry.value?.destination?.route == "session_templates"
+                    itemNames[2] -> backStackEntry.value?.destination?.route == "exercise"
                     else -> { false }
                 }
 

@@ -30,6 +30,8 @@ class SessionViewModel : ViewModel() {
 
     var checkedRecords: List<Record>? = null
 
+    var variation: SessionCreationVariation? = null
+
     init {
         viewModelScope.launch {
             recordRepository.getSessions().collect {

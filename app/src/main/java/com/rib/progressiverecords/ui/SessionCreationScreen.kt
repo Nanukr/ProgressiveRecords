@@ -65,7 +65,12 @@ fun SessionCreationScreen(
     var session = viewModel.createdSession ?: Session(
         id = UUID.randomUUID(),
         date = Date(),
-        sessionName = stringResource(R.string.new_session_name)
+        sessionName = stringResource(R.string.new_session_name),
+        isTemplate = if (viewModel.variation == SessionCreationVariation.TEMPLATE) {
+            1
+        } else {
+            0
+        }
     )
     viewModel.createdSession = session
 
@@ -937,6 +942,7 @@ private fun cancelAndDelete(
     viewModel.createdSession = null
     viewModel.positionBeingModified = null
     viewModel.checkedRecords = null
+    viewModel.variation = null
     navController.navigate("session_list")
 }
 
