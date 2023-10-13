@@ -1,5 +1,5 @@
 package com.rib.progressiverecords
 
 enum class SessionCreationVariation {
-    EMPTY, CUSTOM, TEMPLATE
+    GENERAL, CUSTOM, TEMPLATE, EDIT_TEMPLATE
 }

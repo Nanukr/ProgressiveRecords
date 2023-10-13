@@ -28,17 +28,17 @@ import com.rib.progressiverecords.SessionViewModel
 fun Navigation(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "session_screen") {
         navigation(
-            startDestination = "session_list",
+            startDestination = "session_templates",
             route = "session_screen"
         ) {
-            composable("session_list") {
-                val viewModel = it.sharedViewModel<SessionViewModel>(navController)
-                SessionHistoryScreen(viewModel, navController)
-            }
-
             composable("session_templates") {
                 val viewModel = it.sharedViewModel<SessionViewModel>(navController)
                 SessionTemplatesScreen(viewModel, navController)
+            }
+
+            composable("session_list") {
+                val viewModel = it.sharedViewModel<SessionViewModel>(navController)
+                SessionHistoryScreen(viewModel, navController)
             }
 
             composable("session_creation") {

@@ -11,6 +11,7 @@
     <string name="start_empty_workout_button">Començar entrenament buit</string>
     <string name="start_custom_workout_button">Començar entrenament personalitzat</string>
     <string name="template_list_header">Les teves plantilles</string>
+    <string name="delete_template_dialog_title">Eliminar plantilla?</string>
 
     //Session creation
     <string name="set_label">Set</string>
@@ -33,18 +34,16 @@
     <string name="move_exercise_down_button">Moure avall</string>
     <string name="exit_session_dialog_title">Sortir de la sessió?</string>
     <string name="exit_session_dialog_text">Tots els canvis seran eliminats</string>
+    <string name="new_template_name">Nova plantilla</string>
+
 
     //Session detail
     <string name="back_button_icon_description">Retrocedir</string>
     <string name="reps_label">reps</string>
-    <string name="delete_session_button_caption">Eliminar sessió</string>
     <string name="delete_session_dialog_top_message">Eliminar sessió?</string>
-    <string name="edit_session_button_caption">Editar sessió</string>
 
     //Exercise list
     <string name="empty_exercise_list_message">No s\'han trobat exercicis</string>
-    <string name="edit_exercise_icon_description">Editar exercici</string>
-    <string name="delete_exercise_icon_description">Eliminar exercici</string>
     <string name="confirm_exercise_deletion_message_top">Eliminar el següent exercici: %s?</string>
     <string name="confirm_exercise_deletion_message_bottom">No s\'eliminarà cap registre que contingui aquest exercici</string>
     <string name="create_exercise_icon_description">Crear exercici</string>
@@ -116,6 +115,8 @@
     <string name="cancel_button">Cancel·lar</string>
     <string name="confirm_button">Confirmar</string>
     <string name="close_button">Tancar</string>
+    <string name="edit_button">Editar</string>
+    <string name="delete_button">Eliminar</string>
     <string name="delete_item_dialog_text">Aquesta acció no es pot desfer</string>
 
 </resources>

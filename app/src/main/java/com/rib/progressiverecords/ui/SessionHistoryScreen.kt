@@ -9,8 +9,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
@@ -19,7 +21,9 @@ import com.rib.progressiverecords.ExerciseSetsList
 import com.rib.progressiverecords.R
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
+import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.SessionWithRecords
+import com.rib.progressiverecords.ui.theme.EditOrDeleteDropdownMenu
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -51,7 +55,9 @@ fun SessionHistoryScreen(
 fun SessionList(
     viewModel: SessionViewModel,
     areTemplates: Boolean,
-    onSelectSession: (SessionWithRecords) -> Unit
+    onSelectSession: (SessionWithRecords) -> Unit,
+    onEditTemplate: (SessionWithRecords) -> Unit = {},
+    onDeleteTemplate: (Session) -> Unit = {},
 ) {
     val emptyListMessage = when (areTemplates) {
         true -> stringResource(R.string.empty_session_list_message)
@@ -86,7 +92,9 @@ fun SessionList(
                     areTemplates = areTemplates,
                     onSelectSession = {
                         onSelectSession(it)
-                    }
+                    },
+                    onEditTemplate = { onEditTemplate(it) },
+                    onDeleteTemplate = { onDeleteTemplate(it) }
                 )
             }
 
@@ -101,7 +109,9 @@ fun SessionList(
 private fun SessionItem(
     session: SessionWithRecords,
     areTemplates: Boolean,
-    onSelectSession: (SessionWithRecords) -> Unit
+    onSelectSession: (SessionWithRecords) -> Unit,
+    onEditTemplate: (SessionWithRecords) -> Unit,
+    onDeleteTemplate: (Session) -> Unit,
 ) {
     var records by remember { mutableStateOf((session.records)) }
     records = records.sortedWith(
@@ -149,15 +159,20 @@ private fun SessionItem(
                     )
                 }
 
-                if (!areTemplates) {
-                    Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
+                if (!areTemplates) {
                     Text(
                         modifier = Modifier.padding(8.dp),
                         text = SimpleDateFormat
                             .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
                             .format(session.session.date).toString(),
                         style = MaterialTheme.typography.body1
+                    )
+                } else {
+                    EditOrDeleteDropdownMenu(
+                        onEdit = { onEditTemplate(session) },
+                        onDelete = { onDeleteTemplate(session.session) }
                     )
                 }
             }

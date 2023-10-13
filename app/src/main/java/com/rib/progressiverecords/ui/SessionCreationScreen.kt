@@ -7,8 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Card
 import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -62,17 +60,38 @@ fun SessionCreationScreen(
 
     val exitingSession = rememberSaveable { mutableStateOf(false) }
 
+    val sessionDefaultTitle: String
+
+    val isTemplate: Boolean
+
+    when (viewModel.variation) {
+        SessionCreationVariation.TEMPLATE, SessionCreationVariation.EDIT_TEMPLATE -> {
+            sessionDefaultTitle = stringResource(R.string.new_template_name)
+            isTemplate = true
+        }
+        else -> {
+            sessionDefaultTitle = stringResource(R.string.new_session_name)
+            isTemplate = false
+        }
+    }
+
     var session = viewModel.createdSession ?: Session(
         id = UUID.randomUUID(),
         date = Date(),
-        sessionName = stringResource(R.string.new_session_name),
-        isTemplate = if (viewModel.variation == SessionCreationVariation.TEMPLATE) {
-            1
-        } else {
-            0
-        }
+        sessionName = sessionDefaultTitle,
+        isTemplate = if (isTemplate) 1 else 0
     )
     viewModel.createdSession = session
+
+    if (viewModel.variation == SessionCreationVariation.CUSTOM) {
+        val recordsWithTemplate = createRecordsWithTemplate(
+            templateRecords = viewModel.templateRecords,
+            sessionId = session.id
+        )
+
+        viewModel.newRecords = recordsWithTemplate.first
+        viewModel.templateRecordsMap = recordsWithTemplate.second
+    }
 
     var records by remember { mutableStateOf((viewModel.newRecords)) }
     records = records.sortedWith(
@@ -95,6 +114,7 @@ fun SessionCreationScreen(
             ) { it
         SetList(
             session = session,
+            isTemplate = isTemplate,
             exerciseSetsList = exerciseSetsList,
             viewModel = viewModel,
             onUpdateRecords = { record ->
@@ -108,11 +128,7 @@ fun SessionCreationScreen(
                               },
             onOpenDateDialog = { changingDate.value = true },
             onUpdateSessionName = {
-                session = session.copy(
-                    id = session.id,
-                    sessionName = it,
-                    date = session.date
-                )
+                session = session.copy(sessionName = it)
                 viewModel.createdSession = session
             },
             selectExercise = { addingExercise.value = true },
@@ -154,11 +170,7 @@ fun SessionCreationScreen(
                 onDismissRequest = { changingDate.value = false },
                 onSelectDate = {
                     if (it != null) {
-                        session = session.copy(
-                            id = session.id,
-                            sessionName = session.sessionName,
-                            date = Date(it)
-                        )
+                        session = session.copy(date = Date(it))
                         viewModel.createdSession = session
                     }
                 }
@@ -259,7 +271,7 @@ fun SessionCreationScreen(
         if (exitingSession.value) {
             ExitSessionDialog(
                 onExitSession = {
-                    cancelAndDelete(viewModel = viewModel, navController = navController)
+                    cancelAndDelete(viewModel = viewModel, navController = navController, isCancelled = true)
                 },
                 onDismissRequest = { exitingSession.value = false }
             )
@@ -274,6 +286,7 @@ fun SessionCreationScreen(
 @Composable
 private fun SetList(
     session: Session,
+    isTemplate: Boolean,
     exerciseSetsList: ExerciseSetsList,
     viewModel: SessionViewModel,
     onUpdateRecords: (Record) -> Unit,
@@ -293,6 +306,7 @@ private fun SetList(
     ) {
         SessionNameAndDate(
             session = session,
+            isTemplate = isTemplate,
             onOpenDateDialog = { onOpenDateDialog() },
             onUpdateSessionName = { onUpdateSessionName(it) }
         )
@@ -307,6 +321,7 @@ private fun SetList(
                     if (setList.isNotEmpty()) {
                         ExerciseSets(
                             sets = setList,
+                            placeholderMap = viewModel.templateRecordsMap,
                             sessionId = session.id,
                             setSize = setSize,
                             checkedRecords = viewModel.checkedRecords ?: emptyList(),
@@ -351,6 +366,7 @@ private fun SetList(
 @Composable
 private fun SessionNameAndDate (
     session: Session,
+    isTemplate: Boolean,
     onOpenDateDialog: () -> Unit,
     onUpdateSessionName: (String) -> Unit
 ) {
@@ -376,13 +392,14 @@ private fun SessionNameAndDate (
                 .background(MaterialTheme.colors.primary)
         )
 
-        StandardButton(
-            onClick = { onOpenDateDialog() },
-            text = SimpleDateFormat
-                .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
-                .format(session.date).toString(),
-            textAlign = TextAlign.Right
-        )
+        if (!isTemplate) {
+            StandardButton(
+                onClick = { onOpenDateDialog() },
+                text = SimpleDateFormat
+                    .getDateInstance(SimpleDateFormat.DEFAULT, Locale.getDefault())
+                    .format(session.date).toString(),
+                textAlign = TextAlign.Right
+            )
     }
 }
 
@@ -503,7 +520,7 @@ private fun ExerciseHeader (
                         )
 
                         Text(
-                            text = stringResource(R.string.delete_exercise_icon_description),
+                            text = stringResource(R.string.delete_button),
                             color = MaterialTheme.colors.onPrimary
                         )
                     }
@@ -574,6 +591,7 @@ private fun ExerciseHeader (
 @Composable
 private fun ExerciseSets(
     sets: List<Record>,
+    placeholderMap: Map<UUID, Record>,
     sessionId: UUID,
     setSize: Int,
     checkedRecords: List<Record>,
@@ -617,6 +635,9 @@ private fun ExerciseSets(
 
             SetItem(
                 record = record,
+                placeholderRecord = if (placeholderMap.containsKey(record.id)) {
+                    placeholderMap[record.id]
+                } else { null },
                 category = category,
                 onUpdateRecord = {
                     onUpdateRecords(it)
@@ -647,6 +668,7 @@ private fun ExerciseSets(
 @Composable
 private fun SetItem(
     record: Record,
+    placeholderRecord: Record?,
     category: String,
     onUpdateRecord: (Record) -> Unit,
     onChangeRecordState: (Record) -> Unit,
@@ -654,22 +676,44 @@ private fun SetItem(
 ) {
     var currentRecord = record
 
-    val default1 = when (category) {
-        "General" -> currentRecord.weight.toString()
-        "Cardio" -> currentRecord.distance.toString()
-        "Reps only" -> currentRecord.repetitions.toString()
-        else -> ""
+    var default1 = ""
+    var default2 = ""
+    var entryPlaceholder1 = ""
+    var entryPlaceholder2 = ""
+
+    when (category) {
+        "General" -> {
+            default1 = currentRecord.weight.toString()
+            entryPlaceholder1 = placeholderRecord?.weight.toString()
+            default2 = currentRecord.repetitions.toString()
+            entryPlaceholder2 = placeholderRecord?.repetitions.toString()
+        }
+        "Cardio" -> {
+            default1 = currentRecord.distance.toString()
+            entryPlaceholder1 = placeholderRecord?.distance.toString()
+            default2 = currentRecord.exerciseDuration.toString()
+            entryPlaceholder2 = placeholderRecord?.exerciseDuration.toString()
+        }
+        "Reps only" -> {
+            default1 = currentRecord.repetitions.toString()
+            entryPlaceholder1 = placeholderRecord?.repetitions.toString()
+        }
+        "Duration" -> {
+            default2 = currentRecord.exerciseDuration.toString()
+            entryPlaceholder2 = placeholderRecord?.exerciseDuration.toString()
+        }
     }
 
-    val default2 = when (category) {
-        "General" -> currentRecord.repetitions.toString()
-        "Cardio" -> currentRecord.exerciseDuration.toString()
-        "Duration" -> currentRecord.exerciseDuration.toString()
-        else -> ""
+    if (placeholderRecord == null) {
+        entryPlaceholder1 = ""
+        entryPlaceholder2 = ""
     }
 
     var value1 by rememberSaveable { mutableStateOf(default1) }
     var value2 by rememberSaveable { mutableStateOf(default2) }
+
+    val placeholder1 by rememberSaveable { mutableStateOf(entryPlaceholder1) }
+    val placeholder2 by rememberSaveable { mutableStateOf(entryPlaceholder2) }
 
     LaunchedEffect(currentRecord) {
         value1 = default1
@@ -694,7 +738,8 @@ private fun SetItem(
 
         if (category != "Duration") {
             StandardTextField(
-                entryValue = value1,
+                entryValue = if (value1 == "0.0" || value1 == "0") { "" } else { value1 },
+                placeholder = placeholder1,
                 onValueChange = {
                     value1 = it
                     currentRecord = updateRecordWithCategory(
@@ -716,13 +761,14 @@ private fun SetItem(
 
         if (category != "Reps only") {
             StandardTextField(
-                entryValue = value2,
+                entryValue = if (value2 == "0.0" || value2 == "0") { "" } else { value2 },
+                placeholder = placeholder2,
                 onValueChange = {
                     value2 = it
                     currentRecord = updateRecordWithCategory(
                         record = currentRecord,
-                        value1 = value1,
-                        value2 = value2,
+                        value1 = if (value1 == "" ) { "0" } else { value1 },
+                        value2 = if (value2 == "" ) { "0" } else { value2 },
                         category = category
                     )
                     onUpdateRecord(currentRecord)
@@ -936,14 +982,29 @@ private fun saveSessionToDb (
 
 private fun cancelAndDelete(
     viewModel: SessionViewModel,
-    navController: NavController
+    navController: NavController,
+    isCancelled: Boolean = false
 ) {
     viewModel.newRecords = emptyList()
+    viewModel.checkedRecords = null
+    viewModel.templateRecords = emptyList()
     viewModel.createdSession = null
     viewModel.positionBeingModified = null
     viewModel.checkedRecords = null
+    viewModel.templateRecordsMap = emptyMap()
+
+    val route = if (
+        viewModel.variation == SessionCreationVariation.TEMPLATE ||
+        viewModel.variation == SessionCreationVariation.EDIT_TEMPLATE ||
+        isCancelled
+    ) {
+        "session_templates"
+    } else {
+        "session_list"
+    }
     viewModel.variation = null
-    navController.navigate("session_list")
+
+    navController.navigate(route)
 }
 
 private fun createNewRecord(
@@ -969,6 +1030,30 @@ private fun createNewRecord(
         exerciseDuration = duration,
         distance = distance
     )
+}
+
+private fun createRecordsWithTemplate(
+    templateRecords: List<Record>,
+    sessionId: UUID
+): Pair<List<Record>, Map<UUID, Record>> {
+    val newRecords = mutableListOf<Record>()
+    val templateMap: MutableMap<UUID, Record> = mutableMapOf()
+
+    templateRecords.forEach { templateRecord ->
+        val newRecord = createNewRecord(
+            sessionId = sessionId,
+            previousSet = templateRecord.setNumber - 1,
+            exerciseName = templateRecord.exerciseName,
+            sessionPosition = templateRecord.sessionPosition,
+            category = getCategoryWithRecord(templateRecord)
+        )
+
+        templateMap[newRecord.id] = templateRecord
+
+        newRecords.add(newRecord)
+    }
+
+    return Pair(newRecords.toList(), templateMap.toMap())
 }
 
 private fun deleteSetInPosition(

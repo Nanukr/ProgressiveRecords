@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -99,6 +101,7 @@ fun StandardTextButton(
 fun StandardTextField (
     modifier: Modifier = Modifier,
     entryValue: String,
+    placeholder: String = "",
     onValueChange: (String) -> Unit,
     isNumeric: Boolean,
     isEnabled: Boolean = true,
@@ -123,6 +126,14 @@ fun StandardTextField (
         onValueChange = {
             textFieldValue = it
             onValueChange(textFieldValue)
+        },
+        placeholder = {
+          Text(
+              modifier = Modifier.fillMaxWidth(),
+              text = placeholder,
+              color = Color.Gray,
+              textAlign = TextAlign.Center
+          )
         },
         singleLine = true,
         enabled = isEnabled,
@@ -421,6 +432,57 @@ fun MultipleOptionsChoosingDialog(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun EditOrDeleteDropdownMenu(
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
+    Box(modifier = Modifier
+        .wrapContentSize(Alignment.TopStart)) {
+        IconButton(onClick = { dropdownMenuExpanded = true }) {
+            Icon(
+                Icons.Default.MoreVert,
+                tint = MaterialTheme.colors.onBackground,
+                contentDescription = stringResource(R.string.edit_button)
+            )
+        }
+        DropdownMenu(
+            expanded = dropdownMenuExpanded,
+            onDismissRequest = { dropdownMenuExpanded = false }
+        ) {
+            DropdownMenuItem(onClick = { onEdit() }) {
+                Icon(
+                    modifier = Modifier.padding(4.dp),
+                    painter = painterResource(id = R.drawable.ic_edit),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
+                )
+
+                Text(
+                    text = stringResource(R.string.edit_button),
+                    color = MaterialTheme.colors.onPrimary
+                )
+            }
+
+            DropdownMenuItem(onClick = { onDelete() }) {
+                Icon(
+                    modifier = Modifier.padding(4.dp),
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = "",
+                    tint = MaterialTheme.colors.onPrimary
+                )
+
+                Text(
+                    text = stringResource(R.string.delete_button),
+                    color = MaterialTheme.colors.onPrimary
+                )
             }
         }
     }

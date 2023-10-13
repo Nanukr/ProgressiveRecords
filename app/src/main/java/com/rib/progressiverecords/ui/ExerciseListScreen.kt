@@ -268,7 +268,7 @@ private fun ExerciseItem(
                 ) {
                     Icon(
                         Icons.Filled.Edit,
-                        contentDescription = stringResource(R.string.edit_exercise_icon_description),
+                        contentDescription = stringResource(R.string.edit_button),
                         tint = MaterialTheme.colors.onBackground
                     )
                 }
@@ -280,7 +280,7 @@ private fun ExerciseItem(
                 ) {
                     Icon(
                         Icons.Filled.Delete,
-                        contentDescription = stringResource(R.string.delete_exercise_icon_description),
+                        contentDescription = stringResource(R.string.delete_button),
                         tint = MaterialTheme.colors.onBackground
                     )
                 }

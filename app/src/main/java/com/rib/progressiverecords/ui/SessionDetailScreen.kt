@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -16,14 +15,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseSetsList
 import com.rib.progressiverecords.R
+import com.rib.progressiverecords.SessionCreationVariation
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
 import com.rib.progressiverecords.model.Session
+import com.rib.progressiverecords.ui.theme.EditOrDeleteDropdownMenu
 import com.rib.progressiverecords.ui.theme.StandardTwoButtonsDialog
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -83,6 +83,7 @@ private fun SetList(
                 viewModel.createdSession = session
                 viewModel.newRecords = records
                 viewModel.checkedRecords = records
+                viewModel.variation = SessionCreationVariation.GENERAL
                 navController.navigate("session_creation")
             },
             onDeleteSession = { sessionBeingDeleted = true }
@@ -104,7 +105,8 @@ private fun SetList(
                     deleteSessionWithRecords(
                         session = it,
                         viewModel = viewModel,
-                        navController = navController
+                        navController = navController,
+                        isTemplate = false
                     )
                 },
                 onDismissRequest = { sessionBeingDeleted = false }
@@ -119,8 +121,6 @@ private fun SessionHeader (
     onEditSession: () -> Unit,
     onDeleteSession: () -> Unit
 ) {
-    var dropdownMenuExpanded by rememberSaveable { mutableStateOf(false) }
-
     val date = session?.date ?: Date()
 
     Row (
@@ -145,47 +145,10 @@ private fun SessionHeader (
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Box(modifier = Modifier
-            .wrapContentSize(Alignment.TopStart)) {
-            IconButton(onClick = { dropdownMenuExpanded = true }) {
-                Icon(Icons.Default.MoreVert,
-                    tint = MaterialTheme.colors.onBackground,
-                    contentDescription = stringResource(R.string.edit_session_button_caption)
-                )
-            }
-            DropdownMenu(
-                expanded = dropdownMenuExpanded,
-                onDismissRequest = { dropdownMenuExpanded = false }
-            ) {
-                DropdownMenuItem(onClick = { onEditSession() }) {
-                    Icon(
-                        modifier = Modifier.padding(4.dp),
-                        painter = painterResource(id = R.drawable.ic_edit),
-                        contentDescription = "",
-                        tint = MaterialTheme.colors.onPrimary
-                    )
-
-                    Text(
-                        text = stringResource(R.string.edit_session_button_caption),
-                        color = MaterialTheme.colors.onPrimary
-                    )
-                }
-
-                DropdownMenuItem(onClick = { onDeleteSession() }) {
-                    Icon(
-                        modifier = Modifier.padding(4.dp),
-                        painter = painterResource(id = R.drawable.ic_delete),
-                        contentDescription = "",
-                        tint = MaterialTheme.colors.onPrimary
-                    )
-
-                    Text(
-                        text = stringResource(R.string.delete_session_button_caption),
-                        color = MaterialTheme.colors.onPrimary
-                    )
-                }
-            }
-        }
+        EditOrDeleteDropdownMenu(
+            onEdit = { onEditSession() },
+            onDelete = { onDeleteSession() }
+        )
     }
 
     Divider()
@@ -350,10 +313,11 @@ private fun DeleteSessionDialog(
     }
 }
 
-private fun deleteSessionWithRecords(
+fun deleteSessionWithRecords(
     session: Session,
     viewModel: SessionViewModel,
-    navController: NavController
+    navController: NavController,
+    isTemplate: Boolean
 ) {
     viewModel.viewModelScope.launch {
         viewModel.deleteRecordsInSession(session.id)
@@ -361,5 +325,5 @@ private fun deleteSessionWithRecords(
     }
 
     viewModel.detailedSession = null
-    navController.navigate("session_list")
+    navController.navigate(if (isTemplate) { "session_templates" } else { "session_list" })
 }

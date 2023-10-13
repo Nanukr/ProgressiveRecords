@@ -1,7 +1,6 @@
 package com.rib.progressiverecords.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -18,8 +17,11 @@ import com.rib.progressiverecords.R
 import com.rib.progressiverecords.SessionCreationVariation
 import com.rib.progressiverecords.SessionViewModel
 import com.rib.progressiverecords.model.Record
+import com.rib.progressiverecords.model.Session
 import com.rib.progressiverecords.model.relations.SessionWithRecords
 import com.rib.progressiverecords.ui.theme.StandardButton
+import com.rib.progressiverecords.ui.theme.StandardTwoButtonsDialog
+import java.util.*
 
 @Composable
 fun SessionTemplatesScreen(
@@ -28,7 +30,11 @@ fun SessionTemplatesScreen(
 ) {
     var startingCustomWorkout by rememberSaveable { mutableStateOf(false) }
 
+    var deletingTemplate by rememberSaveable { mutableStateOf(false) }
+
     var selectedTemplate: SessionWithRecords? = null
+
+    var templateBeingDeleted: Session? = null
 
     Scaffold(
         topBar = { TopBar(
@@ -43,6 +49,21 @@ fun SessionTemplatesScreen(
             onSelectSession = {
                 startingCustomWorkout = true
                 selectedTemplate = it
+            },
+            onCreateNewTemplate = {
+                viewModel.variation = SessionCreationVariation.TEMPLATE
+                navController.navigate("session_creation")
+            },
+            onEditTemplate = { template ->
+                viewModel.createdSession = template.session
+                viewModel.newRecords = template.records
+                viewModel.checkedRecords = template.records
+                viewModel.variation = SessionCreationVariation.EDIT_TEMPLATE
+                navController.navigate("session_creation")
+            },
+            onDeleteTemplate = {
+                templateBeingDeleted = it
+                deletingTemplate = true
             }
         )
 
@@ -51,8 +72,13 @@ fun SessionTemplatesScreen(
                 StartCustomWorkoutPreviewDialog(
                     template = template,
                     onStartCustomWorkout = {
-                        viewModel.createdSession = it.session
-                        viewModel.newRecords = it.records
+                        viewModel.createdSession = Session(
+                            id = UUID.randomUUID(),
+                            sessionName = it.session.sessionName,
+                            date = Date(),
+                            isTemplate = 0
+                        )
+                        viewModel.templateRecords = it.records
                         viewModel.variation = SessionCreationVariation.CUSTOM
                         navController.navigate("session_creation")
                     },
@@ -63,6 +89,20 @@ fun SessionTemplatesScreen(
                 )
             }
         }
+
+        if (deletingTemplate) {
+            DeleteTemplateDialog(
+                onDeleteTemplate = {
+                    deleteSessionWithRecords(
+                        session = templateBeingDeleted!!,
+                        viewModel = viewModel,
+                        navController = navController,
+                        isTemplate = true
+                    )
+                },
+                onDismissRequest = { deletingTemplate = false }
+            )
+        }
     }
     BackHandler {}
 }
@@ -71,11 +111,14 @@ fun SessionTemplatesScreen(
 private fun TemplatesList(
     viewModel: SessionViewModel,
     navController: NavController,
-    onSelectSession: (SessionWithRecords) -> Unit
+    onSelectSession: (SessionWithRecords) -> Unit,
+    onCreateNewTemplate: () -> Unit,
+    onEditTemplate: (SessionWithRecords) -> Unit,
+    onDeleteTemplate: (Session) -> Unit
 ) {
     Column {
         StartEmptyWorkoutButton {
-            viewModel.variation = SessionCreationVariation.EMPTY
+            viewModel.variation = SessionCreationVariation.GENERAL
             navController.navigate("session_creation")
         }
 
@@ -84,7 +127,9 @@ private fun TemplatesList(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp).weight(1f),
+                modifier = Modifier
+                    .padding(horizontal = 24.dp, vertical = 4.dp)
+                    .weight(1f),
                 text = stringResource(R.string.template_list_header),
                 color = MaterialTheme.colors.onPrimary,
                 style = MaterialTheme.typography.h6,
@@ -93,7 +138,9 @@ private fun TemplatesList(
 
             IconButton(
                 modifier = Modifier.padding(8.dp),
-                onClick = { /*TODO*/ }
+                onClick = {
+                    onCreateNewTemplate()
+                }
             ) {
                 Icon(
                     painterResource(R.drawable.ic_add),
@@ -109,7 +156,9 @@ private fun TemplatesList(
             areTemplates = true,
             onSelectSession = {
                 onSelectSession(it)
-            }
+            },
+            onEditTemplate = { onEditTemplate(it) },
+            onDeleteTemplate = { onDeleteTemplate(it) }
         )
     }
 }
@@ -154,7 +203,7 @@ private fun StartCustomWorkoutPreviewDialog(
         text = {
             Column {
                 Text(
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(4.dp),
                     text = template.session.sessionName,
                     style = MaterialTheme.typography.h6
                 )
@@ -192,5 +241,18 @@ private fun StartCustomWorkoutPreviewDialog(
                 onClick = { onStartCustomWorkout(template) }
             )
         }
+    )
+}
+
+@Composable
+private fun DeleteTemplateDialog(
+    onDeleteTemplate: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
+    StandardTwoButtonsDialog(
+        title = stringResource(R.string.delete_template_dialog_title),
+        text = stringResource(R.string.delete_item_dialog_text),
+        onConfirm = { onDeleteTemplate() },
+        onDismissRequest = { onDismissRequest() }
     )
 }

@@ -24,6 +24,10 @@ class SessionViewModel : ViewModel() {
 
     var newRecords = emptyList<Record>()
 
+    var templateRecords = emptyList<Record>()
+
+    var templateRecordsMap = emptyMap<UUID, Record>()
+
     var positionBeingModified: Int? = null
 
     var previousSets: Int? = null

@@ -11,6 +11,7 @@
     <string name="start_empty_workout_button">Empezar entrenamiento vacío</string>
     <string name="start_custom_workout_button">Empezar entrenamiento personalizado</string>
     <string name="template_list_header">Tus plantillas</string>
+    <string name="delete_template_dialog_title">Eliminar plantilla?</string>
 
     //Session creation
     <string name="set_label">Set</string>
@@ -33,18 +34,15 @@
     <string name="move_exercise_down_button">Mover abajo</string>
     <string name="exit_session_dialog_title">¿Salir de la sesión?</string>
     <string name="exit_session_dialog_text">Todos los cambios serán eliminados</string>
+    <string name="new_template_name">Nueva plantilla</string>
 
     //Session detail
     <string name="back_button_icon_description">Retroceder</string>
     <string name="reps_label">reps</string>
-    <string name="delete_session_button_caption">Eliminar sesión</string>
     <string name="delete_session_dialog_top_message">¿Eliminar sesión?</string>
-    <string name="edit_session_button_caption">Editar sessión</string>
 
     //Exercise list
     <string name="empty_exercise_list_message">No se han encontrado ejercicios</string>
-    <string name="edit_exercise_icon_description">Editar ejercicio</string>
-    <string name="delete_exercise_icon_description">Eliminar ejercicio</string>
     <string name="confirm_exercise_deletion_message_top">¿Eliminar el siguiente ejercicio: %s?</string>
     <string name="confirm_exercise_deletion_message_bottom">No se eliminará ningún registro que contenga este ejercicio</string>
     <string name="create_exercise_icon_description">Crear ejercicio</string>
@@ -116,6 +114,8 @@
     <string name="cancel_button">Cancelar</string>
     <string name="confirm_button">Confirmar</string>
     <string name="close_button">Cerrar</string>
+    <string name="edit_button">Editar</string>
+    <string name="delete_button">Eliminar</string>
     <string name="delete_item_dialog_text">Esta acción no se puede deshacer</string>
 
 </resources>

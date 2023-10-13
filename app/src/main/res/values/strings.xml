@@ -10,6 +10,7 @@
     <string name="start_empty_workout_button">Start empty workout</string>
     <string name="start_custom_workout_button">Start custom workout</string>
     <string name="template_list_header">Your templates</string>
+    <string name="delete_template_dialog_title">Delete template?</string>
 
     //Session creation
     <string name="set_label">Set</string>
@@ -32,18 +33,15 @@
     <string name="move_exercise_down_button">Move down</string>
     <string name="exit_session_dialog_title">Exit session?</string>
     <string name="exit_session_dialog_text">All changes will be deleted</string>
+    <string name="new_template_name">New template</string>
 
     //Session detail
     <string name="back_button_icon_description">Go back</string>
     <string name="reps_label">reps</string>
-    <string name="delete_session_button_caption">Delete session</string>
     <string name="delete_session_dialog_top_message">Delete session?</string>
-    <string name="edit_session_button_caption">Edit session</string>
 
     //Exercise list
     <string name="empty_exercise_list_message">No exercises found</string>
-    <string name="edit_exercise_icon_description">Edit exercise</string>
-    <string name="delete_exercise_icon_description">Delete exercise</string>
     <string name="confirm_exercise_deletion_message_top">Delete following exercise: %s?</string>
     <string name="confirm_exercise_deletion_message_bottom">This will not delete any records containing this exercise</string>
     <string name="create_exercise_icon_description">Create exercise</string>
@@ -115,6 +113,8 @@
     <string name="cancel_button">Cancel</string>
     <string name="confirm_button">Confirm</string>
     <string name="close_button">Close</string>
+    <string name="edit_button">Edit</string>
+    <string name="delete_button">Delete</string>
     <string name="delete_item_dialog_text">This action cannot be undone</string>
 
 </resources>

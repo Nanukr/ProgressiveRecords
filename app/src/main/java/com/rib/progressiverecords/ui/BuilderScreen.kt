@@ -41,7 +41,7 @@ fun BuilderScreen(
                 items = listOf(
                     BottomNavItem(
                         name = itemNames[0],
-                        route = "session_screen",
+                        route = "session_list",
                         icon = painterResource(R.drawable.ic_history)
                     ),
 
