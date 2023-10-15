@@ -34,6 +34,9 @@
     <string name="exit_session_dialog_title">Exit session?</string>
     <string name="exit_session_dialog_text">All changes will be deleted</string>
     <string name="new_template_name">New template</string>
+    <string name="save_template_dialog_title">Save template?</string>
+        <string name="save_template_error_message">You can\'t save a template with no records</string>
+    <string name="exit_template_dialog_title">Exit template?</string>
 
     //Session detail
     <string name="back_button_icon_description">Go back</string>
@@ -66,10 +69,16 @@
     //Exercise filter
     <string name="clear_filter_button">Clear</string>
 
+    //Settings
+    <string name="theme_label">Dark theme</string>
+    <string name="language_label">Language</string>
+    <string name="select_language_dialog_title">Select language</string>
+
     //Navigation bar
     <string name="history_nav_item_text">History</string>
     <string name="train_nav_item_text">Train</string>
     <string name="exercise_nav_item_text">Exercises</string>
+    <string name="settings_nav_item">Settings</string>
 
     //Muscles
     <string name="muscle_name_chest">Chest</string>

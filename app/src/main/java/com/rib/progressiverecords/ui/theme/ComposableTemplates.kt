@@ -111,9 +111,14 @@ fun StandardTextField (
     textColor: Color = MaterialTheme.colors.onPrimary
 ) {
     var textFieldValue by rememberSaveable { mutableStateOf(entryValue) }
+    var placeholderValue by rememberSaveable { mutableStateOf(placeholder) }
 
     LaunchedEffect(entryValue) {
         textFieldValue = entryValue
+    }
+
+    LaunchedEffect(placeholder) {
+        placeholderValue = placeholder
     }
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -130,7 +135,7 @@ fun StandardTextField (
         placeholder = {
           Text(
               modifier = Modifier.fillMaxWidth(),
-              text = placeholder,
+              text = placeholderValue,
               color = Color.Gray,
               textAlign = TextAlign.Center
           )
@@ -312,13 +317,15 @@ fun SingleOptionChoosingDialog(
     options: List<String>,
     selectedOption: String,
     title: Int,
+    width: Int = 250,
+    height: Int = 600,
     changeSelectedOption: (String) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     Dialog (onDismissRequest = { onDismissRequest() }) {
         Card (
             modifier = Modifier
-                .size(width = 250.dp, height = 600.dp),
+                .size(width = width.dp, height = height.dp),
             backgroundColor = MaterialTheme.colors.primary,
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -337,7 +344,7 @@ fun SingleOptionChoosingDialog(
 
                 Column (
                     modifier = Modifier
-                        .height(490.dp)
+                        .height((height-110).dp)
                 ) {
                     LazyColumn {
                         items(options) { option ->

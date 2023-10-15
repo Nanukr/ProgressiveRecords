@@ -13,3 +13,5 @@ val Gray900 = Color(0xFF212121)
 //Secondary
 val Orange700 = Color(0xFFF57C00)
 val Orange300 = Color(0xFFFFB74D)
+
+val SplashBackground = Color(0xFF23252E)

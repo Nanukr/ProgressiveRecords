@@ -35,6 +35,9 @@
     <string name="exit_session_dialog_title">Sortir de la sessió?</string>
     <string name="exit_session_dialog_text">Tots els canvis seran eliminats</string>
     <string name="new_template_name">Nova plantilla</string>
+    <string name="save_template_dialog_title">Guardar plantilla?</string>
+    <string name="save_template_error_message">No pots guardar una plantilla sense entrades</string>
+    <string name="exit_template_dialog_title">Sortir de la plantilla?</string>
 
 
     //Session detail
@@ -68,10 +71,16 @@
     //Exercise filter
     <string name="clear_filter_button">Netejar</string>
 
+    //Settings
+    <string name="theme_label">Tema fosc</string>
+    <string name="language_label">Idioma</string>
+    <string name="select_language_dialog_title">Seleccionar idioma</string>
+
     //Navigation bar
     <string name="history_nav_item_text">Historial</string>
     <string name="train_nav_item_text">Entrenar</string>
     <string name="exercise_nav_item_text">Exercicis</string>
+    <string name="settings_nav_item">Configuració</string>
 
     //Muscles
     <string name="muscle_name_chest">Pit</string>

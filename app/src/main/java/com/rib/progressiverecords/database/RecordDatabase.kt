@@ -205,7 +205,7 @@ val migration_5_6 = object: Migration(5, 6) {
                     "id, sessionId, exerciseName, sessionPosition, setNumber, repetitions, weight, exerciseDuration, distance" +
                     ") " +
                     "SELECT " +
-                    "id, sessionId, exerciseName, sessionPosition, setNumber, repetitions, weight, COALESCE(NULLIF(exerciseDuration, 0.0), NULL), distance" +
+                    "id, sessionId, exerciseName, sessionPosition, setNumber, repetitions, weight, CAST(exerciseDuration AS REAL), distance" +
                     " FROM Record"
         )
 

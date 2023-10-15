@@ -11,7 +11,7 @@
     <string name="start_empty_workout_button">Empezar entrenamiento vacío</string>
     <string name="start_custom_workout_button">Empezar entrenamiento personalizado</string>
     <string name="template_list_header">Tus plantillas</string>
-    <string name="delete_template_dialog_title">Eliminar plantilla?</string>
+    <string name="delete_template_dialog_title">¿Eliminar plantilla?</string>
 
     //Session creation
     <string name="set_label">Set</string>
@@ -35,6 +35,9 @@
     <string name="exit_session_dialog_title">¿Salir de la sesión?</string>
     <string name="exit_session_dialog_text">Todos los cambios serán eliminados</string>
     <string name="new_template_name">Nueva plantilla</string>
+    <string name="save_template_dialog_title">¿Guardar plantilla?</string>
+    <string name="save_template_error_message">No puedes guardar una plantilla sin entradas</string>
+    <string name="exit_template_dialog_title">¿Salir de la plantilla?</string>
 
     //Session detail
     <string name="back_button_icon_description">Retroceder</string>
@@ -67,10 +70,16 @@
     //Exercise filter
     <string name="clear_filter_button">Limpiar</string>
 
+    //Settings
+    <string name="theme_label">Tema oscuro</string>
+    <string name="language_label">Idioma</string>
+    <string name="select_language_dialog_title">Seleccionar idioma</string>
+
     //Navigation bar
     <string name="history_nav_item_text">Historial</string>
     <string name="train_nav_item_text">Entrenar</string>
     <string name="exercise_nav_item_text">Ejercicios</string>
+    <string name="settings_nav_item">Configuración</string>
 
     //Muscles
     <string name="muscle_name_chest">Pecho</string>

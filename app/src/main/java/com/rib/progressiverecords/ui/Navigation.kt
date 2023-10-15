@@ -22,10 +22,19 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import com.rib.progressiverecords.BottomNavItem
 import com.rib.progressiverecords.R
-import com.rib.progressiverecords.SessionViewModel
+import com.rib.progressiverecords.StoreSettings
+import com.rib.progressiverecords.ui.exercise.ExerciseListScreen
+import com.rib.progressiverecords.ui.session.SessionCreationScreen
+import com.rib.progressiverecords.ui.session.SessionDetailScreen
+import com.rib.progressiverecords.ui.session.SessionHistoryScreen
+import com.rib.progressiverecords.ui.session.SessionTemplatesScreen
+import com.rib.progressiverecords.viewModel.SessionViewModel
 
 @Composable
-fun Navigation(navController: NavHostController) {
+fun Navigation(
+    navController: NavHostController,
+    settings: StoreSettings
+) {
     NavHost(navController = navController, startDestination = "session_screen") {
         navigation(
             startDestination = "session_templates",
@@ -55,6 +64,10 @@ fun Navigation(navController: NavHostController) {
         composable("exercise") {
             ExerciseListScreen(isBeingSelected = false, isSwapping = false, onExercisesSelected = {})
         }
+
+        composable("settings") {
+            SettingsScreen(settings = settings)
+        }
     }
 }
 
@@ -70,7 +83,8 @@ fun BottomNavigationBar(
     val itemNames = listOf(
         stringResource(R.string.history_nav_item_text),
         stringResource(R.string.train_nav_item_text),
-        stringResource(R.string.exercise_nav_item_text)
+        stringResource(R.string.exercise_nav_item_text),
+        stringResource(R.string.settings_nav_item)
     )
     
     AnimatedVisibility(
@@ -87,6 +101,7 @@ fun BottomNavigationBar(
                     itemNames[0] -> backStackEntry.value?.destination?.route == "session_list"
                     itemNames[1] -> backStackEntry.value?.destination?.route == "session_templates"
                     itemNames[2] -> backStackEntry.value?.destination?.route == "exercise"
+                    itemNames[3] -> backStackEntry.value?.destination?.route == "settings"
                     else -> { false }
                 }
 
