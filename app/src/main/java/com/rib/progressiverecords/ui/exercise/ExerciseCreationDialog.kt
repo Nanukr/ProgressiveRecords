@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -32,6 +33,8 @@ fun ExerciseCreationDialog(
     addExercise: (ExerciseWithSecMuscle) -> Unit,
     onDismissRequest: () -> Unit
 ) {
+    val context = LocalContext.current
+
     var choosingPrimMuscle by rememberSaveable { mutableStateOf(false) }
     var choosingSecMuscle by rememberSaveable { mutableStateOf(false) }
     var choosingCategory by rememberSaveable { mutableStateOf(false) }
@@ -41,8 +44,7 @@ fun ExerciseCreationDialog(
 
     var selectedPrimMuscle by rememberSaveable { mutableStateOf(exercise.exercise.primMuscle) }
     var selectedSecMuscles by rememberSaveable { mutableStateOf(turnMuscleListToStringList(exercise.muscles)) }
-
-    var secMusclesString by rememberSaveable { mutableStateOf(turnStringListToString(selectedSecMuscles)) }
+    var secMusclesString by rememberSaveable { mutableStateOf(turnStringListToString(translateMuscleListFromEnglish(selectedSecMuscles, context))) }
 
     var selectedCategory by rememberSaveable { mutableStateOf(exercise.exercise.category) }
 
@@ -112,7 +114,7 @@ fun ExerciseCreationDialog(
                 )
 
                 ExerciseMusclesEntries(
-                    selectedPrimMuscle = selectedPrimMuscle,
+                    selectedPrimMuscle = getMuscleFromEnglish(selectedPrimMuscle, context),
                     secMusclesString = secMusclesString,
                     onChoosePrimMuscle = { choosingPrimMuscle = true },
                     onChooseSecMuscles = { choosingSecMuscle = true }
@@ -128,7 +130,7 @@ fun ExerciseCreationDialog(
                 )
 
                 ExerciseOthersEntries(
-                    selectedCategory = selectedCategory,
+                    selectedCategory = getCategoryFromEnglish(selectedCategory, context),
                     onChooseCategory = { choosingCategory = true }
                 )
 
@@ -148,25 +150,25 @@ fun ExerciseCreationDialog(
             if (choosingPrimMuscle) {
                 SingleOptionChoosingDialog(
                     options = muscles,
-                    selectedOption = selectedPrimMuscle,
-                    title = R.string.upsert_primary_muscle_long_caption,
-                    changeSelectedOption = { selectedPrimMuscle = it },
+                    selectedOption = getMuscleFromEnglish(selectedPrimMuscle, context),
+                    title = R.string.upsert_primary_muscle_caption,
+                    changeSelectedOption = { selectedPrimMuscle = getMuscleInEnglish(it, context) },
                     onDismissRequest = { choosingPrimMuscle = false }
                 )
             }
 
             if (choosingSecMuscle) {
                 MultipleOptionsChoosingDialog(
-                    title = R.string.upsert_secondary_muscles_long_caption,
+                    title = R.string.upsert_secondary_muscles_caption,
                     options = muscles,
-                    selectedOptions = selectedSecMuscles,
+                    selectedOptions = translateMuscleListFromEnglish(selectedSecMuscles, context),
                     addSelectedOption = {
-                        selectedSecMuscles = selectedSecMuscles + it
-                        secMusclesString = turnStringListToString(selectedSecMuscles)
+                        selectedSecMuscles = selectedSecMuscles + getMuscleInEnglish(it, context)
+                        secMusclesString = turnStringListToString(translateMuscleListFromEnglish(selectedSecMuscles, context))
                     },
                     removeSelectedOption = {
-                        selectedSecMuscles = selectedSecMuscles - it
-                        secMusclesString = turnStringListToString(selectedSecMuscles)
+                        selectedSecMuscles = selectedSecMuscles - getMuscleInEnglish(it, context)
+                        secMusclesString = turnStringListToString(translateMuscleListFromEnglish(selectedSecMuscles, context))
                     },
                     onDismissRequest = { choosingSecMuscle = false }
                 )
@@ -175,9 +177,9 @@ fun ExerciseCreationDialog(
             if (choosingCategory) {
                 SingleOptionChoosingDialog(
                     options = categories,
-                    selectedOption = selectedCategory,
-                    title = R.string.upsert_primary_muscle_long_caption,
-                    changeSelectedOption = { selectedCategory = it },
+                    selectedOption = getCategoryFromEnglish(selectedCategory, context),
+                    title = R.string.upsert_category_caption,
+                    changeSelectedOption = { selectedCategory = getCategoryInEnglish(it, context) },
                     onDismissRequest = { choosingCategory = false }
                 )
             }
@@ -259,18 +261,17 @@ private fun ExerciseMusclesEntries(
             ) {
                 Text (
                     modifier = Modifier.padding(4.dp),
-                    text = stringResource(R.string.upsert_primary_muscle_short_caption),
+                    text = stringResource(R.string.upsert_primary_muscle_caption),
                     color = MaterialTheme.colors.onPrimary
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
-
                 Text(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.dp).weight(1f),
                     text = selectedPrimMuscle,
                     color = Color.Gray,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Right
                 )
 
                 Icon(
@@ -289,18 +290,17 @@ private fun ExerciseMusclesEntries(
             ) {
                 Text (
                     modifier = Modifier.padding(4.dp),
-                    text = stringResource(R.string.upsert_secondary_muscles_short_caption),
+                    text = stringResource(R.string.upsert_secondary_muscles_caption),
                     color = MaterialTheme.colors.onPrimary
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
-
                 Text(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.dp).weight(1f),
                     text = secMusclesString,
                     color = Color.Gray,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Right
                 )
 
                 Icon(
@@ -339,14 +339,13 @@ private fun ExerciseOthersEntries(
                     color = MaterialTheme.colors.onPrimary
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
-
                 Text(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.dp).weight(1f),
                     text = selectedCategory,
                     color = Color.Gray,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Right
                 )
 
                 Icon(

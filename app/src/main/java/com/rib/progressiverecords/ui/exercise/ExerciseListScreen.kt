@@ -18,6 +18,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -226,6 +227,8 @@ private fun ExerciseItem(
     onDelete: (ExerciseWithSecMuscle) -> Unit,
 
 ) {
+    val context = LocalContext.current
+
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -252,7 +255,9 @@ private fun ExerciseItem(
                 )
 
                 Text(
-                    text = "${exercise.exercise.primMuscle} - ${exercise.exercise.category}",
+                    text = getMuscleFromEnglish(exercise.exercise.primMuscle, context) +
+                            " - " +
+                            getCategoryFromEnglish(exercise.exercise.category, context),
                     style = MaterialTheme.typography.body1,
                     color = MaterialTheme.colors.onBackground
                 )

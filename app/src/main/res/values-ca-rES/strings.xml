@@ -15,10 +15,10 @@
 
     //Session creation
     <string name="set_label">Set</string>
-    <string name="repetitions_label">Repeticions</string>
+    <string name="repetitions_label">Reps</string>
     <string name="weight_label">Pes</string>
     <string name="duration_label">Duració (min)</string>
-    <string name="distance_label">Distància (km)</string>
+    <string name="distance_label">Dist (km)</string>
     <string name="finish_set_icon_description">Acabar set</string>
     <string name="add_set_button">Afegir set</string>
     <string name="add_exercise_button">Afegir exercici</string>
@@ -58,10 +58,8 @@
     <string name="upsert_exercise_name_caption">Nom</string>
     <string name="enter_exercise_name_placeholder">Introduir nom</string>
     <string name="upsert_target_muscles_caption">Músculs treballats</string>
-    <string name="upsert_primary_muscle_short_caption">Primari</string>
-    <string name="upsert_secondary_muscles_short_caption">Secundaris</string>
-    <string name="upsert_primary_muscle_long_caption">Múscul primari</string>
-    <string name="upsert_secondary_muscles_long_caption">Músculs secundaris</string>
+    <string name="upsert_primary_muscle_caption">Primari</string>
+    <string name="upsert_secondary_muscles_caption">Secundaris</string>
     <string name="upsert_category_caption">Categoria</string>
     <string name="upsert_other_options_caption">Altres opcions</string>
     <string name="create_exercise_caption">Crear exercici</string>

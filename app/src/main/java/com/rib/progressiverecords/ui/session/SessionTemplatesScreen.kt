@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseSetsList
@@ -220,19 +222,19 @@ private fun StartCustomWorkoutPreviewDialog(
                         val lastSet = set[set.lastIndex]
                         Row {
                             Text(
+                                modifier = Modifier.padding(4.dp).weight(1f),
                                 text = lastSet.exerciseName,
                                 style = MaterialTheme.typography.body1,
                                 color = MaterialTheme.colors.onPrimary,
-                                modifier = Modifier.padding(4.dp)
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
 
-                            Spacer(modifier = Modifier.weight(1f))
-
                             Text(
+                                modifier = Modifier.padding(4.dp),
                                 text = "x ${lastSet.setNumber}",
                                 style = MaterialTheme.typography.body1,
                                 color = MaterialTheme.colors.onPrimary,
-                                modifier = Modifier.padding(4.dp)
                             )
                         }
                     }
@@ -243,6 +245,7 @@ private fun StartCustomWorkoutPreviewDialog(
             StandardButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.start_custom_workout_button),
+                textAlign = TextAlign.Center,
                 onClick = { onStartCustomWorkout(template) }
             )
         }

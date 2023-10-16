@@ -30,6 +30,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -325,7 +326,8 @@ fun SingleOptionChoosingDialog(
     Dialog (onDismissRequest = { onDismissRequest() }) {
         Card (
             modifier = Modifier
-                .size(width = width.dp, height = height.dp),
+                .size(width = width.dp, height = height.dp)
+                .wrapContentSize(),
             backgroundColor = MaterialTheme.colors.primary,
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -337,7 +339,8 @@ fun SingleOptionChoosingDialog(
                     modifier = Modifier.padding(8.dp),
                     text = stringResource(title),
                     color = MaterialTheme.colors.onPrimary,
-                    style = MaterialTheme.typography.h6
+                    style = MaterialTheme.typography.h6,
+                    maxLines = 1
                 )
 
                 Divider()
@@ -604,7 +607,7 @@ private fun StandardTextFieldPreview() {
 private fun MultipleOptionsChoosingDialogPreview() {
     ProgressiveRecordsTheme {
         MultipleOptionsChoosingDialog(
-            title = R.string.upsert_secondary_muscles_long_caption,
+            title = R.string.upsert_secondary_muscles_caption,
             options = listOf("Option1", "Option2", "Option3", "Option4"),
             selectedOptions = listOf("Option1", "Option3"),
             addSelectedOption = {},

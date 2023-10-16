@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.rib.progressiverecords.ExerciseSetsList
@@ -143,22 +144,24 @@ private fun SessionItem(
             Row (
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column (
+                    modifier = Modifier.weight(1f)
+                        ) {
                     Text(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         text = session.session.sessionName,
-                        style = MaterialTheme.typography.h6
+                        style = MaterialTheme.typography.h6,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
                     Text(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         text = "${exerciseSetsList.size} " + stringResource(R.string.exercise_nav_item_text),
                         style = MaterialTheme.typography.body2,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Italic,
                     )
                 }
-
-                Spacer(modifier = Modifier.weight(1f))
 
                 if (!areTemplates) {
                     Text(
@@ -183,19 +186,19 @@ private fun SessionItem(
                     val lastSet = set[set.lastIndex]
                     Row {
                         Text(
+                            modifier = Modifier.padding(4.dp).weight(1f),
                             text = lastSet.exerciseName,
                             style = MaterialTheme.typography.body1,
                             color = MaterialTheme.colors.onPrimary,
-                            modifier = Modifier.padding(4.dp)
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
 
-                        Spacer(modifier = Modifier.weight(1f))
-
                         Text(
+                            modifier = Modifier.padding(4.dp),
                             text = "x ${lastSet.setNumber}",
                             style = MaterialTheme.typography.body1,
                             color = MaterialTheme.colors.onPrimary,
-                            modifier = Modifier.padding(4.dp)
                         )
                     }
                     currentSet ++

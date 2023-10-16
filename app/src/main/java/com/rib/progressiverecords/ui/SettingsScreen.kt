@@ -107,11 +107,11 @@ private fun SettingsContent(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(0.75f))
 
         AppLogoAndVersion()
 
-        Spacer(modifier = Modifier.height(68.dp))
+        Spacer(modifier = Modifier.weight(0.5f))
     }
 }
 
