@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -49,6 +50,8 @@ fun ExerciseListScreen(
     var exerciseBeingDeleted by rememberSaveable { mutableStateOf(false) }
     var choosingFilters by rememberSaveable { mutableStateOf(false) }
 
+    val numberOfExercisesSelected = viewModel.exercisesSelected.collectAsState().value.size
+
     Scaffold(
         topBar = {
             TopBar(
@@ -71,13 +74,13 @@ fun ExerciseListScreen(
             ExerciseList(
                 viewModel = viewModel,
                 onSelectItem = { viewModel.onChangeSelectedExercises(it, isSwapping)},
-                onEditItem = {
+                onEditItem = { exerciseModified ->
                     exerciseBeingModified = true
-                    viewModel.exerciseBeingModified = it
+                    viewModel.exerciseBeingModified = exerciseModified
                 },
-                onDelete = {
+                onDelete = { exerciseModified ->
                     exerciseBeingDeleted = true
-                    viewModel.exerciseBeingModified = it
+                    viewModel.exerciseBeingModified = exerciseModified
                 },
                 isBeingSelected = isBeingSelected
             )
@@ -90,6 +93,7 @@ fun ExerciseListScreen(
 
                     SelectButtons(
                         isSwapping = isSwapping,
+                        numberSelected = numberOfExercisesSelected,
                         onAddExercises = { onExercisesSelected(viewModel.exercisesSelected.value) },
                         onCancelAdding = { onExercisesSelected(emptyList()) }
                     )
@@ -100,11 +104,11 @@ fun ExerciseListScreen(
         if (exerciseBeingModified) {
             ExerciseCreationDialog(
                 exercise = viewModel.exerciseBeingModified ?: createEmptyExercise(),
-                addExercise = {
+                addExercise = { newExercise ->
                     exerciseBeingModified = false
                     deleteExercise(viewModel.exerciseBeingModified!!, viewModel)
                     viewModel.exerciseBeingModified = null
-                    addExerciseToDb(it, viewModel)
+                    addExerciseToDb(newExercise, viewModel)
                 },
                 onDismissRequest = { exerciseBeingModified = false }
             )
@@ -117,10 +121,10 @@ fun ExerciseListScreen(
                     exerciseBeingDeleted = false
                     viewModel.exerciseBeingModified = null
                                    },
-                onDeleteExercise = {
+                onDeleteExercise = { deletedExercise ->
                     exerciseBeingDeleted = false
                     viewModel.exerciseBeingModified = null
-                    deleteExercise(it, viewModel)
+                    deleteExercise(deletedExercise, viewModel)
                 }
             )
         }
@@ -247,11 +251,14 @@ private fun ExerciseItem(
             Column (
                 modifier = Modifier
                     .padding(horizontal = 24.dp, vertical = 8.dp)
+                    .weight(1f)
             ) {
                 Text(
                     text = exercise.exercise.exerciseName,
                     style = MaterialTheme.typography.h6,
-                    color = MaterialTheme.colors.onBackground
+                    color = MaterialTheme.colors.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Text(
@@ -262,8 +269,6 @@ private fun ExerciseItem(
                     color = MaterialTheme.colors.onBackground
                 )
             }
-
-            Spacer(modifier = Modifier.weight(1f))
 
             if (exercise.exercise.isDefault == 0) {
                 IconButton(modifier = Modifier
@@ -325,13 +330,14 @@ private fun DeleteExerciseDialog(
 @Composable
 private fun SelectButtons(
     isSwapping: Boolean,
+    numberSelected: Int,
     onAddExercises: () -> Unit,
     onCancelAdding: () -> Unit
 ) {
     val confirmString = if (isSwapping) {
         stringResource(R.string.change_exercise_in_session_button)
     } else {
-        stringResource(R.string.add_exercises_to_session_button)
+        stringResource(R.string.add_exercises_to_session_button) + if (numberSelected != 0) " ($numberSelected)" else ""
     }
 
     Row (
@@ -362,6 +368,7 @@ private fun SelectButtons(
             modifier = Modifier
                 .weight(1f),
             text = confirmString,
+            enabled = numberSelected != 0,
             onClick = { onAddExercises() }
         )
     }
@@ -371,7 +378,7 @@ private fun SelectButtons(
 @Composable
 private fun SelectButtonsPreview() {
     ProgressiveRecordsTheme {
-        SelectButtons(onAddExercises = { /*TODO*/ }, isSwapping =  false) {}
+        SelectButtons(onAddExercises = { /*TODO*/ }, isSwapping =  false, numberSelected = 1) {}
     }
 }
 

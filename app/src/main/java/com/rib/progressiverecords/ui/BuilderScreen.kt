@@ -25,16 +25,6 @@ fun BuilderScreen(
 ) {
     val navController = rememberNavController()
 
-    val storedLocale = settings.getLocale.collectAsState(initial = "en").value ?: "en"
-    val newLocale = Locale(storedLocale)
-
-    val configuration = LocalConfiguration.current
-    val context = LocalContext.current
-    val resources = context.resources
-
-    configuration.setLocale(newLocale)
-    resources.updateConfiguration(configuration, resources.displayMetrics)
-
     Scaffold(
         bottomBar = {
             val bottomBarState = rememberSaveable { (mutableStateOf(true)) }

@@ -65,12 +65,14 @@ fun StandardButton (
     modifier: Modifier = Modifier,
     textAlign: TextAlign = TextAlign.Start,
     backgroundColor: Color = MaterialTheme.colors.secondaryVariant,
-    textColor: Color = MaterialTheme.colors.onSecondary
+    textColor: Color = MaterialTheme.colors.onSecondary,
+    enabled: Boolean = true
 ) {
     Button (
         modifier = modifier.padding(8.dp),
         onClick = { onClick() },
         colors = ButtonDefaults.buttonColors(backgroundColor = backgroundColor),
+        enabled = enabled
     ) {
         Text (
             text = text,

@@ -230,7 +230,8 @@ fun getMuscleInEnglish(
         context.getString(R.string.muscle_name_adductors) -> "Adductors"
         context.getString(R.string.muscle_name_abductors) -> "Abductors"
         context.getString(R.string.muscle_name_full_body) -> "Full Body"
-        else -> "Olympic"
+        context.getString(R.string.muscle_name_olympic) -> "Olympic"
+        else -> ""
     }
 }
 
@@ -252,7 +253,8 @@ fun getCategoryInEnglish(
         context.getString(R.string.category_name_cardio) -> "Cardio"
         context.getString(R.string.category_name_duration) -> "Duration"
         context.getString(R.string.category_name_reps_only) -> "Reps Only"
-        else -> "Other"
+        context.getString(R.string.category_name_other) -> "Other"
+        else -> ""
     }
 }
 
@@ -278,7 +280,8 @@ fun getMuscleFromEnglish(
         "Adductors" -> context.getString(R.string.muscle_name_adductors)
         "Abductors" -> context.getString(R.string.muscle_name_abductors)
         "Full Body" -> context.getString(R.string.muscle_name_full_body)
-        else -> context.getString(R.string.muscle_name_olympic)
+        "Olympic" -> context.getString(R.string.muscle_name_olympic)
+        else -> ""
     }
 }
 
@@ -300,7 +303,8 @@ fun getCategoryFromEnglish(
         "Cardio" -> context.getString(R.string.category_name_cardio)
         "Duration" -> context.getString(R.string.category_name_duration)
         "Reps Only" -> context.getString(R.string.category_name_reps_only)
-        else -> context.getString(R.string.category_name_other)
+        "Other" -> context.getString(R.string.category_name_other)
+        else -> ""
     }
 }
 
